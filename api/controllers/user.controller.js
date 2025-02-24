@@ -134,6 +134,7 @@ if (Object.keys(inputs).length > 0 || password || email || avatar) {
     res.status(500).json({ message: "Failed to update user!" });
   }
 };
+
 export const verifyEmailUpdate = async (req, res) => {
   const { id, email, otp } = req.body;
   const tokenUserId = req.userId;

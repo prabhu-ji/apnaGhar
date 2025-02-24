@@ -1,53 +1,63 @@
-@import "../../responsive.scss";
+@use "../../responsive.scss" as *;
+@use "../../index.scss" as *;
 
 .searchBar {
   .type {
-
+    display: flex;
+    gap: 3px; 
+    border-radius: 2rem;
+    border: none;
 
     button {
       padding: 16px 36px;
-      border: 1px solid #999;
       border-bottom: none;
       cursor: pointer;
-      background-color: white;
+      background-color: rgb(52, 52, 52);
       text-transform: capitalize;
 
       &.active {
-        background-color: black;
+        background-color: rgb(8, 107, 107);
         color: white;
       }
 
       &:first-child {
         border-top-left-radius: 5px;
-        border-right: none;
       }
       &:last-child {
         border-top-right-radius: 5px;
-        border-left: none;
       }
     }
+
+    margin-bottom: 01rem;
   }
 
   form {
-    border: 1px solid #999;
+    border: none;
+    margin-top: 2px;
     display: flex;
     justify-content: space-between;
     height: 64px;
     gap: 5px;
+    background-color: #3e3e3e00;
 
     @include sm {
       flex-direction: column;
-      border: none;
     }
 
     input {
-      border: none;
+      border: 1px solid #757474; 
       padding: 0px 10px;
       width: 200px;
+      background-color: #2e2d2d;
+      color: white;
+      font-size: 12px;
+      outline: none;
+      &::placeholder {
+        color: rgb(201, 199, 199);
+      }
 
       @include lg {
         padding: 0px 5px;
-
         &:nth-child(2),
         &:nth-child(3) {
           width: 140px;
@@ -61,33 +71,36 @@
         }
       }
 
-      @include sm{
+      @include sm {
         width: auto;
         &:nth-child(2),
         &:nth-child(3) {
           width: auto;
         }
         padding: 20px;
-        border: 1px solid #999;
       }
     }
 
-    a{
+    a {
       flex: 1;
-      background-color: #fece51;
+      background-color: teal;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 5px;
 
       button {
         border: none;
         cursor: pointer;
-        background-color: #fece51;
-        
-        @include sm{
+        padding: 16px 36px;
+        background-color: transparent;
+        transition: all ease-in-out 0.2s;
+        background-color: teal;
+
+        @include sm {
           padding: 10px;
         }
-        
+
         img {
           width: 24px;
           height: 24px;

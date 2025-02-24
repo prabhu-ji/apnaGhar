@@ -1,8 +1,15 @@
-@import "../../responsive.scss";
+@use "../../_mixins.scss" as *;
 
 .homePage {
   display: flex;
   height: 100%;
+
+  .h1{
+    font-size: 64px;
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+  }
 
   .textContainer {
     flex: 3;
@@ -44,7 +51,7 @@
         }
 
         h1 {
-          font-size: 36px;
+          font-size: 40px;
 
           @include lg {
             font-size: 32px;
@@ -59,15 +66,4 @@
     }
   }
 
-  .imgContainer {
-    flex: 2;
-    background-color: #fcf5f3;
-    position: relative;
-    display: flex;
-    align-items: center;
-
-    @include md {
-      display: none;
-    }
-  }
 }

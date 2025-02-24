@@ -1,10 +1,11 @@
-@use "../../responsive" as *;
+@use "../../_mixins.scss" as *;
 
 nav {
   height: 100px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 
   a {
     transition: all 0.4s ease;
@@ -46,13 +47,15 @@ nav {
       }
     }
   }
+
   .right {
-    flex: 2;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    background-color: #fcf5f3;
+    background-color: transparent;
     height: 100%;
+    position: relative;
 
     @include md {
       background-color: transparent;
@@ -60,54 +63,77 @@ nav {
 
     a {
       padding: 12px 24px;
-      margin: 20px;
+      margin: 0 10px;
     }
 
-    .user{
+    .user {
       display: flex;
       align-items: center;
-      font-weight: bold;
+      position: relative;
+      cursor: pointer;
 
-      img{
+      img {
         width: 40px;
         height: 40px;
         border-radius: 50%;
         object-fit: cover;
-        margin-right: 20px;
+        margin-right: 10px;
       }
 
-      span{
-        @include sm{
+      span {
+        font-weight: bold;
+
+        @include sm {
           display: none;
         }
       }
 
-      .profile{
-        padding: 12px 24px;
-        background-color: #fece51;
-        cursor: pointer;
-        border: none;
-        position: relative;
-        
-        .notification{
-          position: absolute;
-          top: -8px;
-          right: -8px;
-          background-color: red;
-          color: white;
-          border-radius: 50%;
-          width: 26px;
-          height: 26px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+      .dropdown {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        background-color: rgba(58, 57, 57, 0.9);
+        border: 1px solid #bbb3b3;
+        border-radius: 5px;
+        box-shadow: 0 2px 8px rgba(24, 23, 23, 0.1);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        min-width: 150px;
+
+        p {
+          margin: 0;
+          font-weight: bold;
+          padding-bottom: 5px;
         }
 
+        a,
+        button {
+          margin-top: 5px;
+          padding: 5px;
+          text-align: left;
+          border: none;
+          background: none;
+          cursor: pointer;
+          width: 100%;
+
+          &:hover {
+            background-color: #787777;
+          }
+        }
+
+        a {
+          text-decoration: none;
+          color: inherit;
+        }
       }
     }
 
     .register {
-      background-color: #fece51;
+      background-color: #008080;
+      color: white;
+      border-radius: 5px;
     }
 
     .menuIcon {
@@ -125,28 +151,30 @@ nav {
       }
     }
 
-    .menu {
-      position: absolute;
+    .mobileMenu {
+      position: fixed;
       top: 0;
-      right: -50%;
-      background-color: black;
-      color: white;
+      right: 0;
+      background-color: rgb(34, 34, 34);
+      color: rgba(255, 255, 255, 0.852);
       height: 100vh;
-      width: 50%;
-      transition: all 1s ease;
+      width: 70%;
+      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 18px;
+      z-index: 998;
 
-      &.active {
-        right: 0;
-      }
+      a {
+        display: block;
+        margin: 15px 0;
+        text-decoration: none;
+        color: rgb(36, 211, 255);
 
-      @include sm {
-        a {
-          display: initial;
+        &:hover {
+          color: #ffffff;
         }
       }
     }

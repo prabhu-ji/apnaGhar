@@ -153,14 +153,6 @@ export const register = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
 // Login function
 export const login = async (req, res) => {
   const { username, password } = req.body;

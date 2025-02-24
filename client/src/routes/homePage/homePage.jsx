@@ -1,7 +1,11 @@
+import { useContext } from "react";
 import SearchBar from "../../components/searchBar/SearchBar";
 import "./homePage.scss";
+import { AuthContext } from "../../context/AuthContext";
 
 function HomePage() {
+
+  const {currentUser} = useContext(AuthContext)
 
   return (
     <div className="homePage">
@@ -17,15 +21,15 @@ function HomePage() {
           <SearchBar />
           <div className="boxes">
             <div className="box">
-              <h1>16+</h1>
-              <h2>Years of Experience</h2>
+              <h1>1+</h1>
+              <h2>Year of Experience</h2>
             </div>
             <div className="box">
-              <h1>200</h1>
+              <h1>00</h1>
               <h2>Award Gained</h2>
             </div>
             <div className="box">
-              <h1>2000+</h1>
+              <h1>20+</h1>
               <h2>Property Ready</h2>
             </div>
           </div>

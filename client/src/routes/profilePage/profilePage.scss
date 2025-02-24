@@ -1,0 +1,178 @@
+@use "../../_mixins.scss" as *;
+
+.profilePage {
+  display: flex;
+  height: 100%;
+
+  @include md{
+    flex-direction: column;
+    overflow: scroll;
+  }
+
+  .deleteBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: red;
+    transition: 0.3s;
+  }
+  
+  .deleteBtn:hover {
+    color: darkred;
+    transform: scale(1.1);
+  }
+
+  .details {
+    flex: 3;
+    overflow-y: scroll;
+    padding-bottom: 50px;
+
+    @include md{
+      flex:none;
+      height: max-content;
+    }
+
+    .wrapper{
+      padding-right: 50px;
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+
+      .title{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        h1{
+          font-weight: 300;
+        }
+
+        button{
+          padding: 12px 24px;
+          background-color: #fece51;
+          cursor: pointer;
+          border: none;
+        }
+      }
+
+      .info{
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        span{
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+
+        button{
+          width: 100px;
+          background-color: teal;
+          border: none;
+          color: white;
+          padding: 10px 20px;
+          cursor: pointer;
+          border-radius: 5px;
+        }
+
+        img{
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+      }
+    }
+  }
+
+  .chatContainer {
+    flex: 2;
+    background-color: #fcf5f3;
+    height: 100%;
+
+    @include md{
+      flex:none;
+      height: max-content;
+    }
+
+    .wrapper{
+      padding: 0px 20px;
+      height: 100%;
+    }
+  }
+
+  .dialogOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; 
+  }
+
+  .dialog {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+  }
+
+  .dialog button {
+    margin: 10px;
+    padding: 10px;
+    cursor: pointer;
+  }
+
+  .dialog input {
+    margin: 10px 0;
+    padding: 10px;
+    width: 100%;
+  }
+}
+.profilePage {
+  // Existing styles...
+  
+  .details {
+    .wrapper {
+      .title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        
+        h1 {
+          margin: 0;
+        }
+        
+        .user-actions {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          
+          a button {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            
+            &:hover {
+              background-color: #1666d9;
+            }
+          }
+        }
+      }
+      
+      // Other existing styles...
+    }
+  }
+}
