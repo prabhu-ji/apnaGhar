@@ -1,76 +1,201 @@
 .newPostPage {
-  height: 100%;
+  height: 100vh;
   display: flex;
-
+  
+  
   .formContainer {
     flex: 3;
-    overflow: scroll;
-
+    margin-bottom: 2rem;
+    
+    padding: 20px;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.313);
+    
+    h1 {
+      color: teal;
+      margin-bottom: 20px;
+    }
+    
     .wrapper {
-      margin: 30px 50px 100px 0px;
-
+      margin: 20px 30px 50px 0px;
+     
+      
       form {
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 20px;
-
+        
         .item {
           width: 30%;
           display: flex;
           flex-direction: column;
-          gap: 5px;
-
+          gap: 8px;
+          
           label {
+            font-weight: 500;
+            color: #91bbbc;
+            margin-bottom: 5px;
           }
-
+          
           input {
-            padding: 20px;
+            padding: 15px;
             border-radius: 5px;
-            border: 1px solid gray;
+            border: 1px solid #4e4d4d;
+            background-color: #292929bb;
+            color: #ede7e7;
+            
+            &:focus {
+              outline: 2px solid rgba(0, 128, 128, 0.3);
+              border-color: teal;
+            }
           }
-
+          
           select {
-            padding: 19px;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #4e4d4d;
+            background-color: #292929bb;
+            color: #ede7e7;
+            
+            &:focus {
+              outline: 2px solid rgba(0, 128, 128, 0.3);
+              border-color: teal;
+            }
           }
-
+          
           &.description {
             width: 100%;
-            height: 320px;
-
-            .quill > .ql-container > .ql-editor{
-              height: 200px;
-              font-size: 16px;
+            height: 300px; 
+            margin-bottom: 20px; 
+            
+            label {
+              margin-bottom: 10px;
+            }
+            
+            .quill {
+              height: calc(100% - 30px); 
+              
+              .ql-toolbar {
+                border-top-left-radius: 5px;
+                border-top-right-radius: 5px;
+                border-color: #ffffff;
+              }
+              
+              .ql-container {
+                height: calc(100% - 42px); 
+                border-bottom-left-radius: 5px;
+                border-bottom-right-radius: 5px;
+                border-color: #f4f4f4;
+                
+                .ql-editor {
+                  height: 100%;
+                  font-family: 'Poppins', sans-serif;
+                  line-height: 1.5;
+                  font-size: 16px;
+                }
+              }
             }
           }
         }
+        
         .sendButton {
           width: 30%;
+          padding: 15px;
           border-radius: 5px;
           border: none;
           background-color: teal;
-          color: white;
+          color: rgb(255, 255, 255);
           font-weight: bold;
           cursor: pointer;
+          transition: background-color 0.2s;
+          margin-top: 20px;
+          
+          &:hover {
+            background-color: #006666;
+          }
         }
       }
     }
   }
-
+  
   .sideContainer {
     flex: 2;
-    background-color: #fcf5f3;
+    margin-bottom: 2rem;
+    background-color: #161616bd;
     display: flex;
     flex-direction: column;
     gap: 20px;
     align-items: center;
     justify-content: center;
-
+    padding: 20px;
+    border-left: 1px solid #313131;
+    
     img {
-      width: 50%;
+      width: 80%;
       height: 180px;
       object-fit: cover;
       border-radius: 5px;
+      box-shadow: 0 2px 8px rgba(244, 242, 242, 0.1);
+    }
+  }
+}
+
+
+@media screen and (max-width: 1200px) {
+  .newPostPage {
+    .formContainer {
+      .wrapper {
+        form {
+          .item {
+            width: 45%;
+            
+            &.description {
+              width: 100%;
+              height: 300px; 
+            }
+          }
+          .sendButton {
+            width: 45%;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .newPostPage {
+    flex-direction: column;
+    
+    .formContainer {
+      flex: 1;
+      
+      .wrapper {
+        margin: 20px 0;
+        
+        form {
+          .item {
+            width: 100%;
+            
+            &.description {
+              height: 300px; 
+            }
+          }
+          .sendButton {
+            width: 100%;
+          }
+        }
+      }
+    }
+    
+    .sideContainer {
+      flex: 1;
+      padding: 30px;
+      
+      img {
+        width: 60%;
+      }
     }
   }
 }

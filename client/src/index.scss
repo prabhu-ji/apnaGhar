@@ -27,10 +27,35 @@ body {
   --bg-color: #f0f0f0;
   --text-gray: #888;
   --white: #fff;
-  --teal: rgb(0, 192, 192);
+  --teal: rgb(4, 171, 171);
   --sea-green: #2e8b57;
-  --sea-green-dark: #276b44; /* Manually darkened for hover */
+  --sea-green-dark: #276b44; 
+  
+  
+   /* Custom minimal scrollbar */
+   &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 10px;
+    transition: background-color 0.3s;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0) transparent;
 }
+
+
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--teal);

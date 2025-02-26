@@ -1,8 +1,7 @@
 import prisma from "../lib/prisma.js";
 
 export const createVisit = async (req, res) => {
-  const { postId, date, timeSlot, message } = req.body;
-  const visitorId = req.userId;
+  const { visitorId, postId, date, timeSlot, message } = req.body;
 
   try {
     const post = await prisma.post.findUnique({
@@ -76,8 +75,7 @@ export const createVisit = async (req, res) => {
 
 export const updateVisitStatus = async (req, res) => {
   const { visitId } = req.params;
-  const { status, responseMessage } = req.body;
-  const userId = req.userId;
+  const { userId, status, responseMessage } = req.body;
 
   try {
     const visit = await prisma.visit.findUnique({
@@ -98,7 +96,7 @@ export const updateVisitStatus = async (req, res) => {
       data: { status, responseMessage },
       include: { post: true, visitor: true, owner: true }
     });
-
+    
     const notification = await prisma.notification.create({
       data: {
         type: status === 'ACCEPTED' ? 'VISIT_ACCEPTED' : 'VISIT_REJECTED',
@@ -117,6 +115,7 @@ export const updateVisitStatus = async (req, res) => {
     res.status(500).json({ message: "Failed to update visit status!" });
   }
 };
+
 
 export const getVisits = async (req, res) => {
   const userId = req.userId;
@@ -150,3 +149,90 @@ export const getPostVisits = async (req, res) => {
     res.status(500).json({ message: "Failed to get post visits!" });
   }
 };
+
+export const getVisitRequests = async (req, res) => {
+  const sellerId = req.userId; 
+
+  try {
+    const visitRequests = await prisma.visit.findMany({
+      where: {
+        ownerId: sellerId, 
+        status: 'PENDING'  
+      },
+      include: {
+        post: true,        
+        visitor: true      
+      },
+      orderBy: {
+        createdAt: 'desc' 
+      }
+    });
+
+    res.status(200).json(visitRequests);
+  } catch (err) {
+    console.error("Error fetching visit requests:", err);
+    res.status(500).json({ message: "Failed to get visit requests!" });
+  }
+};
+
+export const getAllVisitRequests = async (req, res) => {
+  const sellerId = req.userId;
+
+  try {
+    const visitRequests = await prisma.visit.findMany({
+      where: {
+        ownerId: sellerId
+      },
+      include: {
+        post: true,
+        visitor: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: [
+        { status: 'asc' }, 
+        { createdAt: 'desc' }
+      ]
+    });
+
+    res.status(200).json(visitRequests);
+  } catch (err) {
+    console.error("Error fetching all visit requests:", err);
+    res.status(500).json({ message: "Failed to get visit requests!" });
+  }
+};
+
+export const getVisitHistory = async (req, res) => {
+  const sellerId = req.userId;
+
+  try {
+    const visitHistory = await prisma.visit.findMany({
+      where: {
+        ownerId: sellerId,
+      },
+      include: {
+        post: true,
+        visitor: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: [
+        { createdAt: 'desc' }
+      ]
+    });
+
+    res.status(200).json(visitHistory);
+  } catch (err) {
+    console.error("Error fetching visit history:", err);
+    res.status(500).json({ message: "Failed to get visit history!" });
+  }
+};
+

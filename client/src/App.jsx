@@ -27,6 +27,7 @@ function App() {
         { path: "/", element: <HomePage /> },
         { path: "/list", element: <ListPage />, loader: listPageLoader },
         { path: "/:id", element: <SinglePage />, loader: singlePageLoader },
+        { path: "/post/:id", element: <SinglePage />, loader: singlePageLoader },
         { path: "/login", element: <Login /> },
         { path: "/register", element: <Register /> },
         { path: "/about", element: <AboutPage /> },

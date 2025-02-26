@@ -158,7 +158,7 @@ function ProfileUpdatePage() {
               id="password" 
               name="password" 
               type="password"
-              placeholder="Leave blank to keep current password"
+              placeholder="Leave blank to keep password"
             />
           </div>
           <button disabled={isSubmitting}>

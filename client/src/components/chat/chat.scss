@@ -2,31 +2,35 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-size: 12px;
 
   .messages {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
     overflow-y: auto;
-    padding: 20px;
+    padding: 10px;
 
     h1 {
       font-weight: 300;
+      font-size: 3rem;
     }
 
     .message {
-      background-color: white;
-      padding: 15px;
-      border-radius: 10px;
+      background-color: #3e3e3e;
+      color: #47a2f7;
+      padding: 10px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 10px;
       cursor: pointer;
       transition: background-color 0.2s ease-in-out;
+      overflow: hidden;
 
       &:hover {
-        background-color: #f9f9f9;
+        background-color: #f11a1a;
       }
 
       img {
@@ -34,23 +38,34 @@
         height: 40px;
         border-radius: 50%;
         object-fit: cover;
+        flex-shrink: 0;
       }
 
       span {
         font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      /* Fix for message preview text overflow */
+      .message-preview {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        min-width: 0;
       }
     }
   }
 
   .chatBox {
     flex: 1;
-    background-color: white;
+    background-color: rgba(40, 40, 40, 0.719);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
     .top {
-      background-color: #f7c14b85;
+      background-color: rgba(5, 92, 92, 0.801);
       padding: 15px 20px;
       font-weight: bold;
       display: flex;
@@ -89,74 +104,105 @@
         max-width: 60%;
         padding: 10px 15px;
         border-radius: 10px;
-        background-color: #f7c14b39;
-        font-size: 14px;
+        background-color: #68686842;
+        font-size: 12px;
 
         &.own {
           align-self: flex-end;
-          background-color: #d1e7a5;
+          background-color: #a5c16c;
           text-align: right;
+          color: #ffc6c6;
+        }
+
+        p {
+          margin: 0 0 5px 0;
+          word-break: break-word;
         }
 
         span {
           font-size: 12px;
           display: block;
           margin-top: 5px;
-          color: #555;
+          color: #818080;
+        }
+
+        /* Fix for location icon alignment */
+        .location-preview {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 5px;
+          color: #ffffff;
+          line-height: 1.5;
+          position: relative;
+          cursor: pointer;
+          transition: color 0.2s ease;
+          overflow: hidden;
+
+          .location-content {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            color:#ff3737;
+          }
         }
       }
     }
 
     .bottom {
-      border-top: 2px solid #f7c14b85;
-      height: 60px;
+      border-top: 2px solid #3837375f;
+      background-color: rgba(39, 39, 39, 0.801);
+      height: 50px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px;
+      padding: 15px;
       position: relative;
 
       .emoji-button,
       .location-button {
         background: none;
         border: none;
-        font-size: 1.5rem;
+        font-size: 1rem;
         cursor: pointer;
-        color: #444;
+        color: #e99f0dee;
         transition: color 0.2s ease;
         margin-right: 10px;
       }
 
       .location-button {
-        background-color: #4caf50;
-        color: white;
+        background-color: rgba(58, 58, 58, 0);
+        color: rgb(186, 48, 48);
         border: none;
-        padding: 10px 15px;
+        border-radius: 5px;
+        padding: 10px;
+        margin-left: 10px;
         cursor: pointer;
-      }
-
-      .emoji-button:hover,
-      .location-button:hover {
-        color: #222;
       }
 
       textarea {
         flex: 1;
+        border: none;
         padding: 10px;
-        font-size: 1rem;
-        min-height: 40px;
         border-radius: 5px;
+        color: hsl(200, 23%, 97%);
+        border: 1px solid #4a4949;
+
+        font-size: 1rem;
+        height: 4rem;
+        border-radius: 5px;
+        background-color: rgba(53, 51, 51, 0.315);
         outline: none;
-        resize: none;
-        border: 1px solid #ccc;
+        border: 1px solid #252525;
         &:focus {
-          border-color: #f7c14b;
+          border-color: #151515;
         }
       }
 
       button {
-        background-color: #f7c14b;
-        color: white;
+        background-color: #1b1a1900;
+        color: teal;
         border: none;
         border-radius: 5px;
         padding: 10px 15px;
@@ -166,77 +212,7 @@
         justify-content: center;
         font-size: 1rem;
         transition: background-color 0.2s ease-in-out;
-
-        &:hover {
-          background-color: #e5b43c;
-        }
-
-        .send-icon {
-          font-size: 1.2rem;
-        }
       }
-    }
-
-    // Map container when location is shared
-    .map-container {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      height: 80%;
-      border-radius: 10px;
-      background-color: white;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-
-      &.show {
-        display: block;
-      }
-
-      .map {
-        width: 100%;
-        height: 100%;
-        border-radius: 10px;
-      }
-
-      .stop-btn {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: red;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-
-        &:hover {
-          background-color: darkred;
-        }
-      }
-    }
-
-    .stop-location-button {
-      background-color: #f44336;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: not-allowed;
-    }
-
-    .location-preview {
-      width: 100%;
-      height: auto;
-      margin-top: 10px;
-    }
-
-    .location-preview img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
     }
   }
 }

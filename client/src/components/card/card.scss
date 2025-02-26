@@ -3,22 +3,55 @@
   display: flex;
   flex-direction: column;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(67, 255, 236, 0.324);
+  background-color: #363636a7;
   transition: transform 0.2s, box-shadow 0.2s;
-  //overflow: hidden;
+  overflow: hidden;
   margin-bottom: 20px;
-  
+  height: 100%; 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
   }
   
+
+  &.sold-property, &.rented-property {
+    opacity: 0.85;
+    
+    .card-img::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.2);
+      z-index: 1;
+    }
+  }
+  
   .card-img {
     height: 220px;
-    //overflow: hidden;
     position: relative;
-    background-color: #f5f5f5;
+    background-color: #dbd7d7;
+    overflow: hidden;
+    
+    .status-overlay {
+      position: absolute;
+      top: 15px;
+      right: -35px;
+      background-color: #f30b16;
+      color: white;
+      padding: 5px 40px;
+      transform: rotate(45deg);
+      font-weight: bold;
+      z-index: 10;
+      box-shadow: 0 2px 5px rgba(132, 131, 131, 0.2);
+      
+      &.rented-overlay {
+        background-color: #0a82f3;
+      }
+    }
     
     .img-placeholder {
       position: absolute;
@@ -29,7 +62,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #999;
+      color: #e4e4e4;
       font-size: 14px;
     }
     
@@ -48,6 +81,8 @@
   .card-content {
     padding: 15px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
   }
   
   .card-header {
@@ -58,16 +93,34 @@
   }
   
   .card-title {
-    font-size: 18px;
+    font-size: 20px;
     margin: 0;
     max-width: 70%;
     
     a {
-      color: #333;
+      color: #ffffff;
+      font-size: 16px;
       text-decoration: none;
-      
+
       &:hover {
-        color: #4d7cff;
+        color: #ffffff;
+        text-decoration: underline;
+      }
+    }
+    
+    .status-label {
+      font-size: 10px;
+      font-weight: normal;
+      margin-left: 5px;
+      
+      &.sold-label {
+        color: #f55a62;
+        font-size: small;
+      }
+      
+      &.rented-label {
+        color: #51abff;
+        font-size: small;
       }
     }
   }
@@ -75,27 +128,48 @@
   .card-price {
     font-size: 20px;
     font-weight: bold;
-    color: #4d7cff;
+    color: rgba(68, 234, 223, 0.655);
   }
   
   .card-description {
-    color: #666;
-    margin-bottom: 15px;
+    color: #ffffff;
+    margin-bottom: 10px;
     line-height: 1.4;
+    flex-shrink: 0; 
   }
   
   .card-info {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     font-size: 14px;
-    color: #777;
+    color: #ffffff;
     margin-bottom: 15px;
+    flex-shrink: 0; 
+    
+    span {
+      margin-right: 15px;
+      margin-bottom: 5px;
+      
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+    
+    .card-type {
+      background-color: rgb(16, 70, 70);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 300;
+    }
   }
   
   .card-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+    justify-content: space-between;
+    margin-top: auto; 
+    flex-shrink: 0;
     
     button {
       display: flex;
@@ -105,173 +179,297 @@
       border: none;
       font-size: 14px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
+      font-weight: 500;
       
       svg {
         margin-right: 5px;
         font-size: 18px;
       }
+      
+      &:active {
+        transform: translateY(1px);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
     }
     
     .save-btn {
-      background-color: #f0f0f0;
-      color: #555;
+      background-color: #323232;
+      color: #ffa43d;
       
-      &:hover {
-        background-color: #e0e0e0;
+      &:hover:not(:disabled) {
+        background-color: #282727;
       }
       
       &.saved {
-        background-color: #e6f7ff;
-        color: #1890ff;
+        background-color: #323232;
+        color: #ffa43d;
+        
+        &:hover {
+          background-color: #282727;
+          color: rgb(255, 255, 255);
+        }
       }
     }
     
     .schedule-btn {
-      background-color: #e6f7ff;
-      color: #1890ff;
+      background-color: #323232;
+      color: rgb(92, 135, 255);
       
-      &:hover {
-        background-color: #bae7ff;
+      &:hover:not(:disabled) {
+        background-color: #282727;
+        color: rgb(255, 255, 255);
       }
     }
     
     .chat-btn {
-      background-color: #f6ffed;
-      color: #52c41a;
+      background-color: #323232;
+      color: #2aff8aca;
       
-      &:hover {
-        background-color: #d9f7be;
+      &:hover:not(:disabled) {
+        background-color: #282727;
+        color: rgb(255, 255, 255);
+      }
+    }
+    
+    .status-btn {
+      background-color: #323232;
+      color: #8087ff;
+      
+      &:hover:not(:disabled) {
+        background-color: #282727;
+      }
+      
+      &.status-active {
+        background-color: #323232;
+        color: white;
+        
+        &:hover:not(:disabled) {
+          background-color: #282727;
+        }
       }
     }
     
     .edit-btn {
-      background-color: #fff7e6;
+      background-color: #323232;
       color: #fa8c16;
       
-      &:hover {
-        background-color: #ffe7ba;
+      &:hover:not(:disabled) {
+        background-color: #282727;
       }
     }
     
     .delete-btn {
-      background-color: #fff1f0;
+      background-color: #323232;
       color: #f5222d;
       
-      &:hover {
-        background-color: #ffccc7;
+      &:hover:not(:disabled) {
+        background-color: #282727;
       }
     }
   }
-  
-  // Calendar overlay - fixed positioning
-  .calendar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  // Calendar popup styling - centered in viewport
-  .calendar-popup {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    z-index: 1001;
-    width: 90%;
-    max-width: 450px;
-    max-height: 90vh;
-    overflow-y: auto;
-    
-    h3 {
-      margin-top: 0;
-      color: #333;
-      margin-bottom: 10px;
-    }
-    
-    p {
-      color: #666;
-      margin-bottom: 15px;
-      font-size: 14px;
-    }
-    
-    .react-datepicker-wrapper {
-      width: 100%;
-      margin-bottom: 15px;
-    }
-    
-    .react-datepicker {
-      width: 100%;
-      max-width: 100%;
-      font-size: 0.9rem;
-    }
-    
-    .react-datepicker__month-container {
-      width: 100%;
-    }
-    
-    .datepicker-input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    
-    .calendar-actions {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-      
-      button {
-        padding: 10px 15px;
-        border-radius: 4px;
-        border: none;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      }
-      
-      .confirm-btn {
-        background-color: #1890ff;
-        color: white;
-        
-        &:hover:not(:disabled) {
-          background-color: #096dd9;
-        }
-      }
-      
-      .cancel-btn {
-        background-color: #f0f0f0;
-        color: #555;
-        
-        &:hover:not(:disabled) {
-          background-color: #d9d9d9;
-        }
-      }
-    }
-  }
+}
 
-  // Responsive design
-  @media (min-width: 768px) {
+// Modal overlay for popups
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// Styling for calendar and confirmation popups
+.calendar-popup, .confirmation-popup {
+  background-color: rgb(39, 39, 39);
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  width: 90%;
+  max-width: 350px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: popIn 0.3s ease;
+  z-index: 1001;
+  
+  h3 {
+    margin-top: 0;
+    color: #ffffff;
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  
+  p {
+    color: #e0e0e0;
+    margin-bottom: 15px;
+    font-size: 10px;
+  }
+  
+  .react-datepicker-wrapper {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .react-datepicker {
+    width: 100%;
+    max-width: 100%;
+    font-size: 0.9rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .react-datepicker__month-container {
+    width: 100%;
+  }
+  
+  .datepicker-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dadada;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .calendar-actions, .confirmation-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    
+    button {
+      padding: 10px 15px;
+      border-radius: 4px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      min-width: 120px;
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+    
+    .confirm-btn {
+      background-color: teal;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background-color: rgb(2, 88, 88);
+      }
+    }
+    
+    .cancel-btn {
+      background-color: #545454;
+      color: #fffcfc;
+      
+      &:hover:not(:disabled) {
+        background-color: #373636;
+      }
+    }
+  }
+}
+
+@keyframes popIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Make the datepicker more responsive and visible with dark theme
+.react-datepicker {
+  font-size: 0.9rem !important;
+  border: 1px solid #444 !important;
+  background-color: #333 !important;
+  color: #fff !important;
+  
+  .react-datepicker__header {
+    background-color: rgba(24, 153, 153, 0.534) !important;
+    border-bottom: 1px solid #555 !important;
+    color: #fff !important;
+  }
+  
+  .react-datepicker__current-month,
+  .react-datepicker__day-name {
+    color: #fff !important;
+  }
+  
+  .react-datepicker__day {
+    color: #eee !important;
+    
+    &:hover {
+      background-color: #555 !important;
+    }
+    
+    &--selected {
+      background-color: teal !important;
+      color: white !important;
+    }
+    
+    &--disabled {
+      color: #666 !important;
+    }
+  }
+  
+  .react-datepicker__time-container {
+    border-left-color: #444 !important;
+    
+    .react-datepicker__time {
+      background-color: #303030 !important;
+      
+      .react-datepicker__time-box {
+        ul.react-datepicker__time-list li.react-datepicker__time-list-item {
+          color: #eee !important;
+          
+          &:hover {
+            background-color: #555 !important;
+          }
+          
+          &--selected {
+            background-color: teal !important;
+            color: white !important;
+          }
+          
+          &--disabled {
+            color: #666 !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design for card layout
+@media (min-width: 768px) {
+  .card {
     flex-direction: row;
+    height: 220px; // Explicit height for desktop view
     
     .card-img {
       width: 35%;
-      height: auto;
-      min-height: 200px;
+      height: 100%;
+      min-height: auto;
+      border-radius: 8px 0 0 8px;
+      overflow: hidden;
       
       img {
         height: 100%;
@@ -280,27 +478,18 @@
     
     .card-content {
       width: 65%;
+      height: 100%;
+      border-radius: 0 8px 8px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card-description {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
   }
-}
-
-// Make the datepicker more responsive
-.react-datepicker {
-  font-size: 0.9rem !important;
-}
-
-.react-datepicker__current-month {
-  font-size: 1rem !important;
-}
-
-.react-datepicker__header {
-  padding-top: 6px !important;
-}
-
-.react-datepicker__navigation {
-  top: 6px !important;
-}
-
-.react-datepicker__day-name, .react-datepicker__day {
-  margin: 0.2rem !important;
 }

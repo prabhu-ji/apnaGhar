@@ -133,7 +133,7 @@ const AboutPage = () => {
     <div className="aboutPage">
       <div className="hero-section">
         <div className="hero-content">
-          <h1>About LamaEstate</h1>
+          <h1>About ApnaGhar</h1>
           <p>Building Trust Through Excellence in Real Estate</p>
         </div>
       </div>
@@ -142,7 +142,7 @@ const AboutPage = () => {
         <div className="container">
           <h2>Our Mission</h2>
           <p>
-            At LamaEstate, we're committed to transforming the real estate
+            At ApnaGhar, we're committed to transforming the real estate
             experience through innovation, integrity, and exceptional service. Our
             mission is to help people find their perfect properties while making
             the process seamless and enjoyable.

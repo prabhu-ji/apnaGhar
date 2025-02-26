@@ -74,41 +74,48 @@ export const getChat = async (req, res) => {
   }
 };
 
-
-
-// In your message controller (example)
 export const sendLocation = async (req, res) => {
   const { chatId, location } = req.body;
   const tokenUserId = req.userId;
 
   try {
-    const chat = await prisma.chat.findUnique({
-      where: { id: chatId },
-      include: { userIDs: true }
+    // Check if chat exists and user is authorized to access it
+    const chat = await prisma.chat.findFirst({
+      where: { 
+        id: chatId,
+        userIDs: { has: tokenUserId }
+      }
     });
 
-    if (!chat || !chat.userIDs.includes(tokenUserId)) {
-      return res.status(403).json({ message: "Unauthorized" });
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found!" });
+    }
+
+    // Ensure chat has at least two users
+    if (!chat.userIDs || chat.userIDs.length < 2) {
+      return res.status(400).json({ message: "Invalid chat: Missing users" });
     }
 
     const message = await prisma.message.create({
       data: {
+        text: `https://www.google.com/maps?q=${location.latitude},${location.longitude}`,
         chatId,
-        senderId: tokenUserId,
-        type: "location", // Add type as "location"
-        content: JSON.stringify(location), // Save location as a JSON string
+        userId: tokenUserId,
       },
     });
 
-    // Emit socket event for real-time message sending
-    socket.emit("sendMessage", {
-      receiverId: chat.receiverId, // adjust receiverId logic accordingly
-      data: message,
+    // Update chat with new message and seen status
+    await prisma.chat.update({
+      where: { id: chatId },
+      data: {
+        seenBy: { set: [tokenUserId] },
+        lastMessage: message.text,
+      },
     });
 
-    res.status(200).json(message);
+    res.status(201).json(message);
   } catch (err) {
-    console.log(err);
+    console.error("Error sending location:", err);
     res.status(500).json({ message: "Failed to send location" });
   }
 };
@@ -119,16 +126,29 @@ export const addChat = async (req, res) => {
   const receiverId = req.body.receiverId;
 
   try {
-    if (!receiverId) return res.status(400).json({ message: "Receiver ID is required!" });
+    if (!receiverId) {
+      return res.status(400).json({ message: "Receiver ID is required!" });
+    }
+    
+    // Validate that receiver exists
+    const receiver = await prisma.user.findUnique({
+      where: { id: receiverId }
+    });
+    
+    if (!receiver) {
+      return res.status(404).json({ message: "Receiver not found!" });
+    }
 
+    // Check if chat already exists between these users
     const existingChat = await prisma.chat.findFirst({
       where: {
-        userIDs: { equals: [tokenUserId, receiverId] },
+        userIDs: { hasEvery: [tokenUserId, receiverId] }
       },
     });
 
     if (existingChat) return res.status(200).json(existingChat);
 
+    // Create new chat only if both users are valid
     const newChat = await prisma.chat.create({
       data: {
         userIDs: [tokenUserId, receiverId],

@@ -9,11 +9,16 @@ import "./profilePage.scss";
 
 const ProfilePage = () => {
   const data = useLoaderData();
-  const { currentUser, deleteUser } = useContext(AuthContext);
+  const { currentUser, deleteUser, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [showDialog, setShowDialog] = useState(false);
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const [password, setPassword] = useState("");
+  const [aadhaar, setAadhaar] = useState("");
   const [error, setError] = useState("");
+  const [verifyError, setVerifyError] = useState("");
+  const [verifySuccess, setVerifySuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!currentUser) {
@@ -41,6 +46,51 @@ const ProfilePage = () => {
     }
   };
 
+  const handleVerifyAccount = async () => {
+    if (!aadhaar) {
+      setVerifyError("Please enter your Aadhaar number.");
+      return;
+    }
+
+    if (aadhaar.length !== 12 || isNaN(aadhaar)) {
+      setVerifyError("Aadhaar number must be 12 digits.");
+      return;
+    }
+
+    setIsLoading(true);
+    setVerifyError("");
+    
+    try {
+      const response = await apiRequest.post("/verification/aadhaar", {
+        aadhaar
+      });
+
+      setVerifySuccess(response.data.message);
+      setVerifyError("");
+      
+      // Update the user data in context to reflect verification
+      if (response.data.success) {
+        // Update the currentUser with isVerified flag
+        updateUser({
+          ...currentUser,
+          isVerified: true
+        });
+        
+        // Close the dialog after 2 seconds
+        setTimeout(() => {
+          setShowVerifyDialog(false);
+          setAadhaar("");
+          setVerifySuccess("");
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Verification Error:", err.response?.data || err.message);
+      setVerifyError(err.response?.data?.message || "Failed to verify Aadhaar!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="profilePage">
       <div className="details">
@@ -56,20 +106,39 @@ const ProfilePage = () => {
           </div>
 
           <div className="info">
-            <span>
-              Avatar:
-              <img src={currentUser?.avatar || "/noavatar.jpg"} alt="User Avatar" />
-            </span>
+            <div className="avatar-container">
+              <img src={currentUser?.avatar || "/noavatar.jpg"} alt="User Avatar" className="avatar" />
+              {currentUser?.isVerified && (
+                <div className="verification-badge" title="Verified Account">✓</div>
+              )}
+            </div>
             <span>Username: <b>{currentUser?.username || "N/A"}</b></span>
-            <span>E-mail: <b>{currentUser?.email || "N/A"}</b></span>
+            <span>Email: <b>{currentUser?.email || "N/A"}</b></span>
             <span>Account Type: <b>{currentUser?.userType || "N/A"}</b></span>
-            <button onClick={() => setShowDialog(true)} style={{ background: "red", color: "white" }}>
-              Delete Account
-            </button>
+            <span>
+              Verification Status: 
+              <b>
+                {currentUser?.isVerified ? (
+                  <span className="verified">Verified</span>
+                ) : (
+                  <span className="not-verified">Not Verified</span>
+                )}
+              </b>
+            </span>
+            <div className="account-actions">
+              {!currentUser?.isVerified && (
+                <button className="verifyAccountBtn" onClick={() => setShowVerifyDialog(true)}>
+                  Verify Account
+                </button>
+              )}
+              <button className="deleteAccountBtn" onClick={() => setShowDialog(true)}>
+                Delete Account
+              </button>
+            </div>
           </div>
 
-          {currentUser?.userType === "seller" && (
-            <>
+          {currentUser?.userType === "seller" ? (
+            <div className="list-section">
               <div className="title">
                 <h1>My List</h1>
                 <Link to="/add">
@@ -83,14 +152,10 @@ const ProfilePage = () => {
                   )}
                 </Await>
               </Suspense>
-            </>
-          )}
-
-          {currentUser?.userType !== "seller" && (
-            <>
-              <div className="title">
-                <h1>Saved List</h1>
-              </div>
+            </div>
+          ) : (
+            <div className="list-section">
+              <h1>Saved List</h1>
               <Suspense fallback={<p>Loading...</p>}>
                 <Await resolve={data?.postResponse} errorElement={<p>Error loading saved posts!</p>}>
                   {(postResponse) => (
@@ -98,7 +163,7 @@ const ProfilePage = () => {
                   )}
                 </Await>
               </Suspense>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -123,9 +188,50 @@ const ProfilePage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            <button onClick={handleDeleteAccount}>Confirm Delete</button>
-            <button onClick={() => setShowDialog(false)}>Cancel</button>
+            {error && <p className="error-message">{error}</p>}
+            <div className="dialog-buttons">
+              <button className="confirm-btn" onClick={handleDeleteAccount}>Confirm Delete</button>
+              <button className="cancel-btn" onClick={() => setShowDialog(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showVerifyDialog && (
+        <div className="dialogOverlay">
+          <div className="dialog verify-dialog">
+            <h3>Verify Your Account with Aadhaar</h3>
+            <p className="dialog-desc">Enter your 12-digit Aadhaar number to verify your account</p>
+            <input
+              type="text"
+              placeholder="Enter Aadhaar number"
+              value={aadhaar}
+              onChange={(e) => setAadhaar(e.target.value)}
+              maxLength={12}
+            />
+            {verifyError && <p className="error-message">{verifyError}</p>}
+            {verifySuccess && <p className="success-message">{verifySuccess}</p>}
+            <div className="dialog-buttons">
+              <button 
+                className="confirm-btn" 
+                onClick={handleVerifyAccount}
+                disabled={isLoading}
+              >
+                {isLoading ? "Verifying..." : "Verify Account"}
+              </button>
+              <button 
+                className="cancel-btn" 
+                onClick={() => {
+                  setShowVerifyDialog(false);
+                  setAadhaar("");
+                  setVerifyError("");
+                  setVerifySuccess("");
+                }}
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

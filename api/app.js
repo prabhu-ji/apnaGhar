@@ -16,6 +16,7 @@ import userRoute from "./routes/user.route.js";
 import chatRoute from "./routes/chat.route.js";
 import messageRoute from "./routes/message.route.js";
 import visitRoute from "./routes/visit.route.js";
+import verificationRoute from "./routes/verification.route.js";
 // import notificationRouter from "./routes/notification.route.js";
 
 const app = express();
@@ -34,6 +35,7 @@ app.use("/api/test", testRoute);
 app.use("/api/chats", chatRoute);
 app.use("/api/messages", messageRoute);
 app.use("/api/visits", visitRoute);
+app.use("/api/verification", verificationRoute);
 // app.use("/api/notifications", notificationRouter);
 
 app.listen(3000, () => {

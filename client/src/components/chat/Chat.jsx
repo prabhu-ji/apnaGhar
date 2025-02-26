@@ -20,6 +20,7 @@ function Chat({ chats }) {
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [locationExpiredMessages, setLocationExpiredMessages] = useState(new Set());
+  const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
   const decrease = useNotificationStore((state) => state.decrease);
 
   const navigate = useNavigate();
@@ -38,13 +39,27 @@ function Chat({ chats }) {
     }
   }, [searchParams, chats]);
 
+  useEffect(() => {
+    socket.on("receiveMessage", (data) => {
+      if (data.chatId === chat?.id) {
+        setChat((prev) => ({ ...prev, messages: [...prev.messages, data] }));
+      }
+    });
+    return () => socket.off("receiveMessage");
+  }, [chat, socket]);
+
   const handleOpenChat = async (id, receiver) => {
+    if (chat?.id === id && isChatBoxOpen) {
+      setIsChatBoxOpen(false);
+      return;
+    }
     try {
       const res = await apiRequest(`/chats/${id}`);
       if (!res.data.seenBy.includes(currentUser.id)) {
         decrease();
       }
       setChat({ ...res.data, receiver });
+      setIsChatBoxOpen(true);
     } catch (err) {
       console.log(err);
     }
@@ -57,7 +72,7 @@ function Chat({ chats }) {
       const res = await apiRequest.post(`/messages/${chat.id}`, { text });
       setChat((prev) => ({ ...prev, messages: [...prev.messages, res.data] }));
       setText('');
-      socket.emit("sendMessage", { receiverId: chat.receiver.id, data: res.data });
+      socket.emit("sendMessage", { receiverId: chat.receiver.id, data: { ...res.data, chatId: chat.id } });
     } catch (err) {
       console.log(err);
     }
@@ -72,7 +87,7 @@ function Chat({ chats }) {
         try {
           const res = await apiRequest.post(`/messages/${chat.id}`, { text: locationUrl });
           setChat((prev) => ({ ...prev, messages: [...prev.messages, res.data] }));
-          socket.emit("sendMessage", { receiverId: chat.receiver.id, data: res.data });
+          socket.emit("sendMessage", { receiverId: chat.receiver.id, data: { ...res.data, chatId: chat.id } });
         } catch (err) {
           console.log("Error sending location:", err);
         }
@@ -86,7 +101,7 @@ function Chat({ chats }) {
     const now = Date.now();
     const expiredMessages = new Set();
 
-    chat.messages.forEach((message) => {
+    chat?.messages.forEach((message) => {
       if (
         message.text.includes("https://www.google.com/maps?q=") &&
         now - new Date(message.createdAt).getTime() > 10 * 60 * 1000
@@ -114,7 +129,7 @@ function Chat({ chats }) {
   });
 
   return (
-    <div className="chat">
+    <div className="chat" style={{ backgroundColor: "#000", color: "#fff" }}>
       <div className="messages">
         <h1>Messages</h1>
         {chats?.map((c) => (
@@ -123,17 +138,18 @@ function Chat({ chats }) {
             key={c.id}
             onClick={() => handleOpenChat(c.id, c.receiver)}
             style={{
-              backgroundColor: c.seenBy.includes(currentUser.id) || chat?.id === c.id ? "white" : "#fecd514e",
+              backgroundColor: c.seenBy.includes(currentUser.id) || chat?.id === c.id ? "#333" : "#fecd514e",
+              color: "#fff",
             }}
           >
             <img src={c.receiver?.avatar || "/noavatar.jpg"} alt="" />
             <span>{c.receiver?.username}</span>
-            <p>{c.lastMessage}</p>
+            <p className="message-preview">{c.lastMessage}</p>
           </div>
         ))}
       </div>
 
-      {chat && (
+      {isChatBoxOpen && chat && (
         <div className="chatBox">
           <div className="top">
             <div className="user">
@@ -142,59 +158,53 @@ function Chat({ chats }) {
             </div>
           </div>
 
-          <div className="center">
+          <div className="center" style={{ overflowY: "auto", maxHeight: "400px" }}>
             {chat.messages.map((message) => (
               <div
                 className="chatMessage"
                 style={{
                   alignSelf: message.userId === currentUser.id ? "flex-end" : "flex-start",
                   textAlign: message.userId === currentUser.id ? "right" : "left",
+                  maxWidth: "70%",
+                  wordWrap: "break-word",
                 }}
                 key={message.id}
               >
                 {message.text.includes("https://www.google.com/maps?q=") ? (
-                  <div
-                    className="location-preview"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      color: locationExpiredMessages.has(message.id) ? "#808080" : "lightblue",
-                      textDecoration: locationExpiredMessages.has(message.id) ? "line-through" : "none",
-                    }}
-                  >
-                    <FaMapMarkerAlt
-                      style={{
-                        marginRight: "5px",
-                        color: locationExpiredMessages.has(message.id) ? "#808080" : "lightblue",
-                      }}
-                    />
-                    <a
-                      href={message.text}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={locationLinkStyle(message.id)}
-                      onClick={(e) =>
-                        locationExpiredMessages.has(message.id) && e.preventDefault()
-                      }
-                    >
-                      Location
-                    </a>
+                  <div className="location-preview">
+                    <div className="location-content">
+                      <FaMapMarkerAlt style={{ marginRight: "5px" }} />
+                      <a
+                        href={message.text}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={locationLinkStyle(message.id)}
+                        onClick={(e) =>
+                          locationExpiredMessages.has(message.id) && e.preventDefault()
+                        }
+                      >
+                        Location
+                      </a>
+                    </div>
+                    <span>{format(message.createdAt)}</span>
                   </div>
                 ) : (
-                  <p>{message.text}</p>
+                  <>
+                    <p>{message.text}</p>
+                    <span>{format(message.createdAt)}</span>
+                  </>
                 )}
-                <span>{format(message.createdAt)}</span>
               </div>
             ))}
             <div ref={messageEndRef}></div>
           </div>
 
-          <div className="bottom">
-            <button className="emoji-button" onClick={handleEmojiPicker}>
+          <div className="bottom" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button className="emoji-button" onClick={handleEmojiPicker} style={{ fontSize: "16px" }}>
               <FaSmile />
             </button>
             {showEmojiPicker && (
-              <div className="emoji-picker">
+              <div className="emoji-picker" style={{ position: "absolute", bottom: "60px" }}>
                 <EmojiPicker onEmojiClick={(emoji) => setText((prev) => prev + emoji.emoji)} />
               </div>
             )}
@@ -203,11 +213,12 @@ function Chat({ chats }) {
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
               placeholder="Type a message..."
+              style={{ flexGrow: 1, resize: "none", padding: "8px" }}
             />
-            <button type="button" onClick={handleSendMessage}>
+            <button type="button" onClick={handleSendMessage} style={{ fontSize: "16px" }}>
               <FaPaperPlane className="send-icon" />
             </button>
-            <button type="button" className="location-button" onClick={handleSendLocation}>
+            <button type="button" className="location-button" onClick={handleSendLocation} style={{ fontSize: "16px" }}>
               <FaMapMarkerAlt />
             </button>
           </div>
