@@ -101,7 +101,7 @@ export const verifyOtp = async (req, res) => {
   }
 };
 
-// Also update your register function to include this check
+// Register function
 export const register = async (req, res) => {
   const { username, email, password, userType } = req.body;
 
@@ -152,14 +152,6 @@ export const register = async (req, res) => {
     res.status(500).json({ message: "Failed to send OTP! " + err.message });
   }
 };
-
-
-
-
-
-
-
-
 
 // Login function
 export const login = async (req, res) => {

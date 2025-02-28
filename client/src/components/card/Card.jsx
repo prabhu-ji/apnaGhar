@@ -114,15 +114,21 @@ function Card({ item, onDelete, listType }) {
     e.stopPropagation(); // Prevent event bubbling
     if (isOwnPost) return toast.info("You cannot save your own post");
     if (!currentUser) return navigate("/login"), toast.error("You need to log in to save posts.");
+    
     try {
       await apiRequest.post("/users/save", { postId: item.id });
       setIsSaved(!isSaved);
       toast.success(isSaved ? "Post removed from saved list" : "Post saved successfully!");
     } catch (err) {
       console.error("Failed to save post:", err);
-      toast.error("An error occurred while saving the post.");
+      if (err.response?.status === 403) {
+        toast.error(err.response.data.message || "You cannot save this post.");
+      } else {
+        toast.error("An error occurred while saving the post.");
+      }
     }
   };
+  
 
   const handleChatClick = async (e) => {
     e.stopPropagation(); // Prevent event bubbling

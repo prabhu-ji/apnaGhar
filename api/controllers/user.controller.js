@@ -134,6 +134,7 @@ if (Object.keys(inputs).length > 0 || password || email || avatar) {
     res.status(500).json({ message: "Failed to update user!" });
   }
 };
+
 export const verifyEmailUpdate = async (req, res) => {
   const { id, email, otp } = req.body;
   const tokenUserId = req.userId;
@@ -183,11 +184,28 @@ export const savePost = async (req, res) => {
     const { postId } = req.body;
     const userId = req.userId;
 
+    // Fetch post and user details
     const post = await prisma.post.findUnique({ where: { id: postId } });
     if (!post) {
       return res.status(404).json({ message: "Post not found!" });
     }
 
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(403).json({ message: "Unauthorized user!" });
+    }
+
+    // Prevent sellers from saving other sellers' posts
+    if (user.userType === "seller") {
+      const postOwner = await prisma.user.findUnique({ where: { id: post.userId } });
+      if (postOwner && postOwner.userType === "seller") {
+        return res.status(403).json({
+          message: "Login with a buyer account to interact with this post.",
+        });
+      }
+    }
+
+    // Check if post is already saved
     const existingSavedPost = await prisma.savedPost.findFirst({
       where: { userId, postId },
     });
@@ -249,18 +267,15 @@ export const deleteUser = async (req, res) => {
   }
 
   try {
-    // First, delete related data
-    // Delete user's saved posts
     await prisma.savedPost.deleteMany({
       where: { userId: id }
     });
 
-    // Delete user's posts
     await prisma.post.deleteMany({
       where: { userId: id }
     });
 
-    // Remove user from any chats
+
     await prisma.chat.updateMany({
       where: {
         userIDs: {

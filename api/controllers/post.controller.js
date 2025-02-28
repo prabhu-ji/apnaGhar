@@ -111,12 +111,19 @@ export const addPost = async (req, res) => {
   const tokenUserId = req.userId;
 
   try {
+
+    if (user.type !== 'seller') {
+      return res.status(403).json({ message: "Only sellers can add posts!" });
+    } 
+    if (!body.postData ||!body.postDetail) {
+      return res.status(400).json({ message: "Post data and post detail are required!" });
+    }
     const newPost = await prisma.post.create({
       data: {
         ...body.postData,
         userId: tokenUserId,
-        isSold: false, // Default value when creating a post
-        isRented: false, // Default value when creating a post
+        isSold: false,
+        isRented: false, 
         postDetail: {
           create: body.postDetail,
         },
