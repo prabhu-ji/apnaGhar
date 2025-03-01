@@ -103,12 +103,17 @@ function Card({ item, onDelete, listType }) {
     try {
       await apiRequest.delete(`/posts/${item.id}`);
       toast.success("Post deleted successfully");
-      onDelete ? onDelete(item.id) : navigate("/profile");
+  
+      if (onDelete) {
+        onDelete(item.id);
+      }
+      navigate("/profile");
     } catch (err) {
       console.error("Failed to delete post:", err);
       toast.error(err.response?.data?.message || "Failed to delete post. Please try again.");
     }
   };
+  
 
   const handleSave = async (e) => {
     e.stopPropagation(); // Prevent event bubbling
@@ -316,7 +321,7 @@ function Card({ item, onDelete, listType }) {
                 {item.title} {statusLabel && <span className={`status-label ${isForRent && isRented ? 'rented-label' : 'sold-label'}`}>({statusLabel})</span>}
               </Link>
             </h2>
-            <span className="card-price">${item.price?.toLocaleString()}{isForRent ? "/month" : ""}</span>
+            <span className="card-price">₹ {item.price?.toLocaleString()}{isForRent ? " (Monthly)" : ""}</span>
           </div>
           <p className="card-description">{item.desc?.substring(0, 100)}...</p>
           <div className="card-info">

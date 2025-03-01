@@ -22,7 +22,6 @@ function Chat({ chats }) {
   const [locationExpiredMessages, setLocationExpiredMessages] = useState(new Set());
   const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
   const decrease = useNotificationStore((state) => state.decrease);
-//ee
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +32,8 @@ function Chat({ chats }) {
     const chatId = searchParams.get("chat");
     if (chatId && chats) {
       const targetChat = chats.find(c => c.id === parseInt(chatId));
-      if (targetChat) {
+      // Only open chats that have a valid receiver
+      if (targetChat && targetChat.receiver && targetChat.receiver.id) {
         handleOpenChat(targetChat.id, targetChat.receiver);
       }
     }
@@ -49,10 +49,17 @@ function Chat({ chats }) {
   }, [chat, socket]);
 
   const handleOpenChat = async (id, receiver) => {
+    // Validate that the receiver exists before opening the chat
+    if (!receiver || !receiver.id) {
+      console.error("Cannot open chat: Invalid receiver");
+      return;
+    }
+
     if (chat?.id === id && isChatBoxOpen) {
       setIsChatBoxOpen(false);
       return;
     }
+
     try {
       const res = await apiRequest(`/chats/${id}`);
       if (!res.data.seenBy.includes(currentUser.id)) {
@@ -67,6 +74,10 @@ function Chat({ chats }) {
 
   const handleSendMessage = async () => {
     if (!text.trim()) return;
+    if (!chat || !chat.receiver || !chat.receiver.id) {
+      console.error("Cannot send message: Invalid chat or receiver");
+      return;
+    }
 
     try {
       const res = await apiRequest.post(`/messages/${chat.id}`, { text });
@@ -79,6 +90,11 @@ function Chat({ chats }) {
   };
 
   const handleSendLocation = () => {
+    if (!chat || !chat.receiver || !chat.receiver.id) {
+      console.error("Cannot send location: Invalid chat or receiver");
+      return;
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
@@ -128,11 +144,14 @@ function Chat({ chats }) {
     textDecoration: locationExpiredMessages.has(messageId) ? "line-through" : "none",
   });
 
+  // Filter out invalid chats that don't have a proper receiver
+  const validChats = chats?.filter(c => c.receiver && c.receiver.username);
+
   return (
     <div className="chat" style={{ backgroundColor: "#000", color: "#fff" }}>
       <div className="messages">
         <h1>Messages</h1>
-        {chats?.map((c) => (
+        {validChats?.map((c) => (
           <div
             className="message"
             key={c.id}
@@ -149,7 +168,7 @@ function Chat({ chats }) {
         ))}
       </div>
 
-      {isChatBoxOpen && chat && (
+      {isChatBoxOpen && chat && chat.receiver && (
         <div className="chatBox">
           <div className="top">
             <div className="user">

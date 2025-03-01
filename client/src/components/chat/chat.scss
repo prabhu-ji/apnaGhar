@@ -18,7 +18,7 @@
     }
 
     .message {
-      background-color: #3e3e3e;
+      background-color: #2b2a2a;
       color: #47a2f7;
       padding: 10px;
       border-radius: 8px;
@@ -59,7 +59,7 @@
 
   .chatBox {
     flex: 1;
-    background-color: rgba(40, 40, 40, 0.719);
+    background-color: rgba(36, 36, 36, 0.719);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -152,7 +152,7 @@
 
     .bottom {
       border-top: 2px solid #3837375f;
-      background-color: rgba(39, 39, 39, 0.801);
+      background-color: rgba(26, 26, 26, 0.596);
       height: 50px;
       display: flex;
       align-items: center;
@@ -185,19 +185,11 @@
         flex: 1;
         border: none;
         padding: 10px;
-        border-radius: 5px;
         color: hsl(200, 23%, 97%);
-        border: 1px solid #4a4949;
-
         font-size: 1rem;
-        height: 4rem;
-        border-radius: 5px;
-        background-color: rgba(53, 51, 51, 0.315);
+        height: 3rem;
+        background-color: rgba(53, 51, 51, 0);
         outline: none;
-        border: 1px solid #252525;
-        &:focus {
-          border-color: #151515;
-        }
       }
 
       button {

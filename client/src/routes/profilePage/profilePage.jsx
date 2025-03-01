@@ -46,50 +46,10 @@ const ProfilePage = () => {
     }
   };
 
-  const handleVerifyAccount = async () => {
-    if (!aadhaar) {
-      setVerifyError("Please enter your Aadhaar number.");
-      return;
-    }
-
-    if (aadhaar.length !== 12 || isNaN(aadhaar)) {
-      setVerifyError("Aadhaar number must be 12 digits.");
-      return;
-    }
-
-    setIsLoading(true);
-    setVerifyError("");
-    
-    try {
-      const response = await apiRequest.post("/verification/aadhaar", {
-        aadhaar
-      });
-
-      setVerifySuccess(response.data.message);
-      setVerifyError("");
-      
-      // Update the user data in context to reflect verification
-      if (response.data.success) {
-        // Update the currentUser with isVerified flag
-        updateUser({
-          ...currentUser,
-          isVerified: true
-        });
-        
-        // Close the dialog after 2 seconds
-        setTimeout(() => {
-          setShowVerifyDialog(false);
-          setAadhaar("");
-          setVerifySuccess("");
-        }, 2000);
-      }
-    } catch (err) {
-      console.error("Verification Error:", err.response?.data || err.message);
-      setVerifyError(err.response?.data?.message || "Failed to verify Aadhaar!");
-    } finally {
-      setIsLoading(false);
-    }
+  const handleVerifyAccount = () => {
+    alert("This feature is currently unavailable.");
   };
+  
 
   return (
     <div className="profilePage">

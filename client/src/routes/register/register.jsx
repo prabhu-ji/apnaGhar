@@ -13,12 +13,13 @@ function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userType, setUserType] = useState("seller");
-  const [timer, setTimer] = useState(600);
+  const [timer, setTimer] = useState(60);
   const navigate = useNavigate();
 
   useEffect(() => {
     let countdown;
     if (otpSent) {
+      setTimer(60);
       countdown = setInterval(() => {
         setTimer((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
@@ -136,14 +137,21 @@ function Register() {
 
         {otpSent && (
           <div className="otpModal">
-            <h2>Enter OTP ({Math.floor(timer / 60)}:{timer % 60})</h2>
-            <label>OTP</label>
-            <input
-              type="text"
-              maxLength="6"
-              onChange={(e) => setOtp(e.target.value)}
-              required
-            />
+            <h2>Verify Your Email</h2>
+            <p>We have sent a verification code to <strong>{email}</strong></p>
+            <div className="timerDisplay">
+              Time remaining: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+            </div>
+            <div className="item">
+              <label>Enter 6-digit OTP</label>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                maxLength="6"
+                placeholder="000000"
+              />
+            </div>
             <button onClick={handleOtpSubmit}>Verify OTP</button>
             {error && <span>{error}</span>}
           </div>

@@ -71,22 +71,25 @@ const AboutPage = () => {
 
   const team = [
     {
-      name: "John Anderson",
+      name: "Prabhu Pathak",
       position: "CEO & Founder",
-      image: "/team/john.jpg",
-      quote: "Building dreams, one home at a time."
+      image: "/prabhu.jpeg",
+      quote: "Building dreams, one home at a time.",
+      linkedin: "https://www.linkedin.com/in/prabhu-ji/"
     },
     {
-      name: "Sarah Williams",
+      name: "Harsh Diwase",
       position: "Head of Operations",
-      image: "/team/sarah.jpg",
-      quote: "Excellence is not an act, but a habit."
+      image: "/harsh.jpeg",
+      quote: "Excellence is not an act, but a habit.",
+      linkedin: "https://www.linkedin.com/in/harsh-diwase-54a964226/"
     },
     {
-      name: "Michael Chen",
+      name: "Ujjawal Pathak",
       position: "Chief Technology Officer",
-      image: "/team/michael.jpg",
-      quote: "Innovating the future of real estate."
+      image: "/ujjwal.jpeg",
+      quote: "Innovating the future of real estate.",
+      linkedin: "https://www.linkedin.com/in/ujjwalpathaak/"
     }
   ];
 
@@ -128,6 +131,14 @@ const AboutPage = () => {
       statsObserver.disconnect();
     };
   }, []);
+
+  const handleContactClick = () => {
+    window.location.href = '/contact';
+  };
+
+  const handleLinkedInClick = (url) => {
+    window.open(url, '_blank');
+  };
 
   return (
     <div className="aboutPage">
@@ -175,7 +186,10 @@ const AboutPage = () => {
           <div className="team-grid">
             {team.map((member, index) => (
               <div className="team-card" key={index}>
-                <div className="image-container">
+                <div 
+                  className="image-container"
+                  onClick={() => handleLinkedInClick(member.linkedin)}
+                >
                   <img src={member.image} alt={member.name} />
                 </div>
                 <h3>{member.name}</h3>
@@ -195,11 +209,11 @@ const AboutPage = () => {
             help you achieve your real estate goals.
           </p>
           <div className="cta-buttons">
-            <button onClick={() => window.location.href = '/contact'}>
+            <button onClick={handleContactClick}>
               Contact Us
             </button>
-            <button onClick={() => window.location.href = '/careers'} className="secondary">
-              View Careers
+            <button onClick={() => window.location.href = '/about'} className="secondary">
+              Learn More About Us
             </button>
           </div>
         </div>

@@ -6,7 +6,7 @@ export const createVisit = async (req, res) => {
   try {
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      include: { user: true }
+      include: { user: true } //idhr user owner hai
     });
 
     if (!post) {
@@ -115,7 +115,6 @@ export const updateVisitStatus = async (req, res) => {
     res.status(500).json({ message: "Failed to update visit status!" });
   }
 };
-
 
 export const getVisits = async (req, res) => {
   const userId = req.userId;

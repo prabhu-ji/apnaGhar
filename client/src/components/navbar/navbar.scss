@@ -6,43 +6,80 @@ nav {
   justify-content: space-between;
   align-items: center;
   position: relative;
-
+  
   a {
     transition: all 0.4s ease;
-
+    
     @include sm {
       display: none;
     }
-
+    
     &:hover {
       scale: 1.05;
+    }
+    
+    // Active link styling
+    &.active {
+      color: #008080; // Teal color
+      font-weight: bold;
+      border-bottom: 2px solid #008080;
     }
   }
 
   .left {
-    flex: 3;
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 50px;
-
+    
     .logo {
       font-weight: bold;
       font-size: 20px;
       display: flex;
       align-items: center;
       gap: 10px;
-
+      
       img {
         width: 28px;
       }
-
+      
       span {
         @include md {
           display: none;
         }
-
+        
         @include sm {
           display: initial;
+        }
+      }
+    }
+  }
+
+  // New center section for navigation
+  .center {
+    flex: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    
+    @include sm {
+      display: none;
+    }
+    
+    a {
+      padding: 10px 5px;
+      position: relative;
+      
+      &.enlist {
+        background-color: #008080;
+        color: white;
+        border-radius: 5px;
+        padding: 8px 20px;
+        
+        &.active {
+          background-color: darken(#008080, 10%);
+          color: white;
+          border-bottom: none;
         }
       }
     }
@@ -56,22 +93,27 @@ nav {
     background-color: transparent;
     height: 100%;
     position: relative;
-
+    
     @include md {
       background-color: transparent;
     }
-
+    
     a {
       padding: 12px 24px;
       margin: 0 10px;
+      
+      &.active {
+        color: #008080;
+        font-weight: bold;
+      }
     }
-
+    
     .user {
       display: flex;
       align-items: center;
       position: relative;
       cursor: pointer;
-
+      
       img {
         width: 40px;
         height: 40px;
@@ -79,15 +121,15 @@ nav {
         object-fit: cover;
         margin-right: 10px;
       }
-
+      
       span {
         font-weight: bold;
-
+        
         @include sm {
           display: none;
         }
       }
-
+      
       .dropdown {
         position: absolute;
         top: 60px;
@@ -101,13 +143,13 @@ nav {
         flex-direction: column;
         padding: 10px;
         min-width: 150px;
-
+        
         p {
           margin: 0;
           font-weight: bold;
           padding-bottom: 5px;
         }
-
+        
         a,
         button {
           margin-top: 5px;
@@ -117,40 +159,51 @@ nav {
           background: none;
           cursor: pointer;
           width: 100%;
-
+          
           &:hover {
             background-color: #787777;
           }
+          
+          &.active {
+            color: #008080;
+            font-weight: bold;
+          }
         }
-
+        
         a {
           text-decoration: none;
           color: inherit;
         }
       }
     }
-
+    
     .register {
       background-color: #008080;
       color: white;
       border-radius: 5px;
+      
+      &.active {
+        background-color: darken(#008080, 10%);
+        color: white;
+        border-bottom: none;
+      }
     }
-
+    
     .menuIcon {
       display: none;
       z-index: 999;
-
+      
       img {
         width: 36px;
         height: 36px;
         cursor: pointer;
       }
-
+      
       @include sm {
         display: inline;
       }
     }
-
+    
     .mobileMenu {
       position: fixed;
       top: 0;
@@ -166,15 +219,20 @@ nav {
       justify-content: center;
       font-size: 18px;
       z-index: 998;
-
+      
       a {
         display: block;
         margin: 15px 0;
         text-decoration: none;
         color: rgb(36, 211, 255);
-
+        
         &:hover {
           color: #ffffff;
+        }
+        
+        &.active {
+          color: #008080;
+          font-weight: bold;
         }
       }
     }

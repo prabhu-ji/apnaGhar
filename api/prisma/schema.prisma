@@ -68,6 +68,8 @@ model SavedPost {
   userId    String   @db.ObjectId
   postId    String   @db.ObjectId
   createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
 }
 
 model User {

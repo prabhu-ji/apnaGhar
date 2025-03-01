@@ -120,55 +120,79 @@
     }
 
     .otpModal {
+      background-color: rgba(31, 30, 30, 0.644);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      align-items: center;
-
+      gap: 16px;
+  
       h2 {
-        color: teal;
-        font-size: 20px;
-        margin-bottom: 20px;
-        margin-top: 0;
         text-align: center;
+        margin-bottom: 10px;
+        color: rgb(32, 211, 211);
       }
-
-      input {
-        width: 60%;
-        padding: 15px;
-        border: 1px solid #888888;
-        border-radius: 5px;
-        background-color: #3b3b3b;
+  
+      p {
+        text-align: center;
+        margin-bottom: 20px;
         color: #ffffff;
-
-        &::placeholder {
-          color: #aaa;
-        }
-
+      }
+  
+      .timerDisplay {
+        text-align: center;
+        font-size: 14px;
+        color: #d8d8d8;
+        margin-bottom: 10px;
+        font-weight: 500;
+      }
+  
+      input {
+        width: 100%;
+        background-color: rgb(163, 161, 161);
+        color: black;
+        padding: 12px 15px;
+        border: 1px solid #bdbdbd;
+        border-radius: 5px;
+        font-size: 16px;
+        letter-spacing: 5px;
+        text-align: center;
+        margin-bottom: 15px;
+        margin-top: 6px;
+        
         &:focus {
-          outline: none;
           border-color: teal;
-          background-color: #fff;
+          outline: none;
+          box-shadow: teal;
         }
       }
-
-      button {
-        padding: 15px 30px;
-        border-radius: 5px;
-        border: none;
-        background-color: teal;
+  
+      .otpButton {
+        background-color: rgb(11, 102, 102);
         color: white;
-        //font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        padding: 12px;
         cursor: pointer;
-
+        font-weight: 500;
+        margin-bottom: 10px;
+        
+        &:hover {
+          background-color: rgb(3, 58, 58);
+        }
+        
         &:disabled {
-          background-color: #bed9d8;
+          background-color: #cccccc;
           cursor: not-allowed;
         }
       }
-
-      span {
-        color: rgba(255, 0, 0, 0.591);
+      .error {
+        color: #ff394c;
+        text-align: center;
+        margin-top: 10px;
+        font-size: 14px;
       }
     }
   }

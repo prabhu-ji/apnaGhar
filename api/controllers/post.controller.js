@@ -76,7 +76,7 @@ export const getPost = async (req, res) => {
             avatar: true,
           },
         },
-        visits: true, // Include scheduled visits
+        visits: true, 
       },
     });
 
@@ -88,9 +88,10 @@ export const getPost = async (req, res) => {
     if (token) {
       try {
         const { id: userId } = jwt.verify(token, process.env.JWT_SECRET_KEY);
-        const saved = await prisma.savedPost.findUnique({
+        const saved = await prisma.savedPost.findFirst({
           where: {
-            userId_postId: { postId: id, userId },
+            userId,
+            postId: id,
           },
         });
         isSaved = !!saved;
@@ -107,31 +108,41 @@ export const getPost = async (req, res) => {
 };
 
 export const addPost = async (req, res) => {
-  const body = req.body;
+  const { postData, postDetail } = req.body;
   const tokenUserId = req.userId;
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { id: tokenUserId },
+    });
 
-    if (user.type !== 'seller') {
-      return res.status(403).json({ message: "Only sellers can add posts!" });
-    } 
-    if (!body.postData ||!body.postDetail) {
-      return res.status(400).json({ message: "Post data and post detail are required!" });
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized to add posts!" });
     }
+
+    if (user.userType !== "seller") {
+      return res.status(403).json({ message: "Only sellers can add posts!" });
+    }
+
+    console.log(tokenUserId);
+
     const newPost = await prisma.post.create({
       data: {
-        ...body.postData,
-        userId: tokenUserId,
+        ...postData,
         isSold: false,
-        isRented: false, 
+        isRented: false,
+        user: {
+          connect: { id: tokenUserId }, 
+        },
         postDetail: {
-          create: body.postDetail,
+          create: postDetail, 
         },
       },
     });
-    res.status(200).json(newPost);
+
+    res.status(201).json(newPost);
   } catch (err) {
-    console.log(err);
+    console.error("Error creating post:", err);
     res.status(500).json({ message: "Failed to create post" });
   }
 };

@@ -5,7 +5,6 @@ const CloudinaryScriptContext = createContext();
 
 function UploadWidget({ uwConfig, setPublicId, setState }) {
   const [loaded, setLoaded] = useState(false);
-
   useEffect(() => {
     if (!loaded) {
       const uwScript = document.getElementById("uw");

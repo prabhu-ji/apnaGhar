@@ -2,6 +2,7 @@ import prisma from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 import OtpService from "../utils/otpService.js";
 
+// Get all users
 export const getUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany();
@@ -12,11 +13,12 @@ export const getUsers = async (req, res) => {
   }
 };
 
+// Get a single user by ID
 export const getUser = async (req, res) => {
   const { id } = req.params;
   try {
     const user = await prisma.user.findUnique({
-      where: { id: id },
+      where: { id },
     });
 
     if (!user) {
@@ -30,6 +32,7 @@ export const getUser = async (req, res) => {
   }
 };
 
+// Update user profile
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const tokenUserId = req.userId;
@@ -41,7 +44,7 @@ export const updateUser = async (req, res) => {
   const { currentPassword, password, avatar, email, ...inputs } = req.body;
   
   try {
-    // First verify if the user exists and get their current data
+    // Get current user data
     const currentUser = await prisma.user.findUnique({
       where: { id }
     });
@@ -50,19 +53,17 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: "User not found!" });
     }
     
-   // Only verify password if there are changes to be made
-if (Object.keys(inputs).length > 0 || password || email || avatar) {
-  // Check if currentPassword was provided
-  if (!currentPassword) {
-    return res.status(400).json({ message: "Current password is required to make changes!" });
-  }
-  
-  // Verify current password
-  const validPassword = await bcrypt.compare(currentPassword, currentUser.password);
-  if (!validPassword) {
-    return res.status(401).json({ message: "Current password is incorrect!" });
-  }
-}
+    // Verify current password if there are changes to be made
+    if (Object.keys(inputs).length > 0 || password || email || avatar) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Current password is required to make changes!" });
+      }
+      
+      const validPassword = await bcrypt.compare(currentPassword, currentUser.password);
+      if (!validPassword) {
+        return res.status(401).json({ message: "Current password is incorrect!" });
+      }
+    }
 
     // Check username availability if it's being changed
     if (inputs.username && inputs.username !== currentUser.username) {
@@ -78,8 +79,9 @@ if (Object.keys(inputs).length > 0 || password || email || avatar) {
       }
     }
 
-    // If email is being changed, verify it's not in use and send OTP
+    // Handle email change with OTP verification
     if (email && email !== currentUser.email) {
+      // Check if email is already in use
       const existingEmailUser = await prisma.user.findFirst({
         where: { 
           email,
@@ -117,7 +119,7 @@ if (Object.keys(inputs).length > 0 || password || email || avatar) {
       });
     }
 
-    // If no email change, update other fields
+    // Update user without email change
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
@@ -135,6 +137,7 @@ if (Object.keys(inputs).length > 0 || password || email || avatar) {
   }
 };
 
+// Verify email update with OTP
 export const verifyEmailUpdate = async (req, res) => {
   const { id, email, otp } = req.body;
   const tokenUserId = req.userId;
@@ -179,18 +182,22 @@ export const verifyEmailUpdate = async (req, res) => {
   }
 };
 
+// Save/unsave a post
 export const savePost = async (req, res) => {
   try {
     const { postId } = req.body;
     const userId = req.userId;
 
-    // Fetch post and user details
-    const post = await prisma.post.findUnique({ where: { id: postId } });
+    // Validate post and user
+    const [post, user] = await Promise.all([
+      prisma.post.findUnique({ where: { id: postId } }),
+      prisma.user.findUnique({ where: { id: userId } })
+    ]);
+    
     if (!post) {
       return res.status(404).json({ message: "Post not found!" });
     }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    
     if (!user) {
       return res.status(403).json({ message: "Unauthorized user!" });
     }
@@ -205,7 +212,7 @@ export const savePost = async (req, res) => {
       }
     }
 
-    // Check if post is already saved
+    // Toggle save status
     const existingSavedPost = await prisma.savedPost.findFirst({
       where: { userId, postId },
     });
@@ -223,14 +230,18 @@ export const savePost = async (req, res) => {
   }
 };
 
+// Get user's posts and saved posts
 export const profilePosts = async (req, res) => {
   const tokenUserId = req.userId;
   try {
-    const userPosts = await prisma.post.findMany({ where: { userId: tokenUserId } });
-    const saved = await prisma.savedPost.findMany({
-      where: { userId: tokenUserId },
-      include: { post: true },
-    });
+    // Use Promise.all to run queries concurrently
+    const [userPosts, saved] = await Promise.all([
+      prisma.post.findMany({ where: { userId: tokenUserId } }),
+      prisma.savedPost.findMany({
+        where: { userId: tokenUserId },
+        include: { post: true },
+      })
+    ]);
 
     const savedPosts = saved.map((item) => item.post);
     res.status(200).json({ userPosts, savedPosts });
@@ -240,14 +251,14 @@ export const profilePosts = async (req, res) => {
   }
 };
 
-export const getNotificationNumber = async (req, res) => {
+// Get notification count
+export const getNotificationCount = async (req, res) => {
   const tokenUserId = req.userId;
   try {
     const notificationCount = await prisma.chat.count({
       where: {
         userIDs: { hasSome: [tokenUserId] },
         NOT: { seenBy: { hasSome: [tokenUserId] } },
-        //orderBy: { createdAt: "desc" },
       },
     });
 
@@ -258,6 +269,7 @@ export const getNotificationNumber = async (req, res) => {
   }
 };
 
+// Delete user account
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
   const tokenUserId = req.userId;
@@ -267,34 +279,37 @@ export const deleteUser = async (req, res) => {
   }
 
   try {
-    await prisma.savedPost.deleteMany({
-      where: { userId: id }
-    });
-
-    await prisma.post.deleteMany({
-      where: { userId: id }
-    });
-
-
-    await prisma.chat.updateMany({
-      where: {
-        userIDs: {
-          hasSome: [id]
+    // Transaction to ensure all operations succeed or fail together
+    await prisma.$transaction([
+      // Delete user's saved posts
+      prisma.savedPost.deleteMany({
+        where: { userId: id }
+      }),
+      
+      // Delete user's posts
+      prisma.post.deleteMany({
+        where: { userId: id }
+      }),
+      
+      // Update chat userIDs to remove the user
+      prisma.chat.updateMany({
+        where: {
+          userIDs: { hasSome: [id] }
+        },
+        data: {
+          userIDs: {
+            set: prisma.chat.findUnique({
+              where: { id: "chatId" }
+            }).userIDs.filter(userId => userId !== id)
+          }
         }
-      },
-      data: {
-        userIDs: {
-          set: prisma.chat.findUnique({
-            where: { id: "chatId" }
-          }).userIDs.filter(userId => userId !== id)
-        }
-      }
-    });
-
-    // Finally, delete the user
-    await prisma.user.delete({
-      where: { id }
-    });
+      }),
+      
+      // Finally, delete the user
+      prisma.user.delete({
+        where: { id }
+      })
+    ]);
 
     res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {

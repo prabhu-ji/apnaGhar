@@ -1,32 +1,42 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
-import nodemailer from "nodemailer";
+import OtpService from "../utils/otpService.js";
 
-// Function to send OTP email
-const sendOtpEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Your OTP Code",
-    text: `Your OTP code is: ${otp}. It will expire in 10 minutes.`,
-  };
+// Register function
+export const register = async (req, res) => {
+  const { username, email, password, userType } = req.body;
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log("OTP sent successfully");
-    return true;
+    // Check for existing user before sending OTP
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { username }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ 
+        message: "A user with this email or username already exists!" 
+      });
+    }
+
+    // Initialize OTP process using OtpService
+    const otpResult = await OtpService.initiateOTP(email, "verification");
+    
+    if (!otpResult.success) {
+      return res.status(500).json({ message: "Failed to send OTP email." });
+    }
+
+    return res.status(200).json({ 
+      message: "OTP sent successfully. Verify OTP to complete registration." 
+    });
   } catch (err) {
-    console.error("Error sending OTP email:", err);
-    return false;
+    console.error("Register Error:", err);
+    res.status(500).json({ message: "Failed to send OTP! " + err.message });
   }
 };
 
@@ -51,22 +61,11 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // Then verify OTP
-    const storedOtp = await prisma.otp.findUnique({
-      where: { email }
-    });
-
-    if (!storedOtp) {
-      return res.status(400).json({ message: "No OTP found for this email!" });
-    }
-
-    if (storedOtp.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP!" });
-    }
-
-    if (new Date(storedOtp.otpExpires) < new Date()) {
-      await prisma.otp.delete({ where: { email } });
-      return res.status(400).json({ message: "OTP has expired!" });
+    // Verify OTP using OtpService
+    const verificationResult = await OtpService.verifyOTP(email, otp);
+    
+    if (!verificationResult.valid) {
+      return res.status(400).json({ message: verificationResult.message });
     }
 
     // Hash password
@@ -83,8 +82,8 @@ export const verifyOtp = async (req, res) => {
         },
       });
 
-      // Delete OTP after successful registration
-      await prisma.otp.delete({ where: { email } });
+      // Clear OTP after successful registration
+      await OtpService.clearOTP(email);
 
       return res.status(201).json({ message: "User registered successfully!" });
     } catch (createError) {
@@ -98,58 +97,6 @@ export const verifyOtp = async (req, res) => {
   } catch (err) {
     console.error("Verify OTP Error:", err);
     res.status(500).json({ message: "Failed to verify OTP! " + err.message });
-  }
-};
-
-// Register function
-export const register = async (req, res) => {
-  const { username, email, password, userType } = req.body;
-
-  try {
-    // Check for existing user before sending OTP
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email },
-          { username }
-        ]
-      }
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ 
-        message: "A user with this email or username already exists!" 
-      });
-    }
-
-    // Rest of your registration code...
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    await prisma.otp.upsert({
-      where: { email },
-      update: {
-        otp,
-        otpExpires: new Date(Date.now() + 10 * 60 * 1000)
-      },
-      create: {
-        email,
-        otp,
-        otpExpires: new Date(Date.now() + 10 * 60 * 1000)
-      }
-    });
-
-    const otpSent = await sendOtpEmail(email, otp);
-    if (!otpSent) {
-      await prisma.otp.delete({ where: { email } });
-      return res.status(500).json({ message: "Failed to send OTP email." });
-    }
-
-    return res.status(200).json({ 
-      message: "OTP sent successfully. Verify OTP to complete registration." 
-    });
-  } catch (err) {
-    console.error("Register Error:", err);
-    res.status(500).json({ message: "Failed to send OTP! " + err.message });
   }
 };
 

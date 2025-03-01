@@ -15,7 +15,6 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AboutPage from "./routes/aboutPage/aboutPage";
 import ContactPage from "./routes/contactPage/contactPage";
-import AgentsPage from "./routes/agentsPage/agentsPage";
 import { NotificationProvider } from "./context/NotificationContext";
 
 function App() {
@@ -32,7 +31,6 @@ function App() {
         { path: "/register", element: <Register /> },
         { path: "/about", element: <AboutPage /> },
         { path: "/contact", element: <ContactPage /> },
-        { path: "/agents", element: <AgentsPage /> },
       ],
     },
     {

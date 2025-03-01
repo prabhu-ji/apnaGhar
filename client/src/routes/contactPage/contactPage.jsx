@@ -22,30 +22,98 @@ const ContactPage = () => {
     message: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const position = [17.385044, 78.486671]; 
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    
+    // Clear error for this field when user types
+    if (errors[e.target.name]) {
+      setErrors({
+        ...errors,
+        [e.target.name]: null
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validate name
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    
+    // Validate email
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    // Validate phone (optional but if provided, ensure it's valid)
+    if (formData.phone.trim() && !/^[0-9+\s-()]{10,15}$/.test(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
+    
+    // Validate message
+    if (!formData.message.trim()) {
+      newErrors.message = "Message is required";
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = "Message must be at least 10 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+    
     setIsLoading(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    toast.success("Message sent successfully! We'll get back to you soon.");
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      message: "",
-    });
-    setIsLoading(false);
+    
+    try {
+      // Option 1: Open mail client with prefilled information
+      const subject = `Contact Request from ${formData.name}`;
+      const body = `
+Name: ${formData.name}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Message: ${formData.message}
+      `;
+      
+      // Create mailto link
+      const mailtoLink = `mailto:info@apnaghar.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      
+      // Open the mail client
+      window.location.href = mailtoLink;
+      
+      toast.success("Opening your email client with your message");
+      
+      // Don't clear form data immediately, in case the user comes back
+      setTimeout(() => {
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      toast.error("There was an error processing your request");
+      setIsLoading(false);
+    }
   };
 
   const officeHours = [
@@ -146,7 +214,7 @@ const ContactPage = () => {
             <h2>Send us a Message</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Name</label>
+                <label>Name <span className="required">*</span></label>
                 <input
                   type="text"
                   name="name"
@@ -154,11 +222,13 @@ const ContactPage = () => {
                   onChange={handleChange}
                   required
                   placeholder="Your full name"
+                  className={errors.name ? "error" : ""}
                 />
+                {errors.name && <div className="error-message">{errors.name}</div>}
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Email</label>
+                  <label>Email <span className="required">*</span></label>
                   <input
                     type="email"
                     name="email"
@@ -166,7 +236,9 @@ const ContactPage = () => {
                     onChange={handleChange}
                     required
                     placeholder="Your email address"
+                    className={errors.email ? "error" : ""}
                   />
+                  {errors.email && <div className="error-message">{errors.email}</div>}
                 </div>
                 <div className="form-group">
                   <label>Phone</label>
@@ -176,11 +248,13 @@ const ContactPage = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="Your phone number"
+                    className={errors.phone ? "error" : ""}
                   />
+                  {errors.phone && <div className="error-message">{errors.phone}</div>}
                 </div>
               </div>
               <div className="form-group">
-                <label>Message</label>
+                <label>Message <span className="required">*</span></label>
                 <textarea
                   name="message"
                   value={formData.message}
@@ -188,7 +262,9 @@ const ContactPage = () => {
                   required
                   placeholder="How can we help you?"
                   rows="6"
+                  className={errors.message ? "error" : ""}
                 ></textarea>
+                {errors.message && <div className="error-message">{errors.message}</div>}
               </div>
               <button type="submit" disabled={isLoading}>
                 {isLoading ? "Sending..." : "Send Message"}
