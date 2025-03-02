@@ -28,7 +28,7 @@ function SinglePage() {
                   <img src="/pin.png" alt="Location" className="icon-small" />
                   <span>{post.address}</span>
                 </div>
-                <div className="price">$ {post.price}</div>
+                <div className="price">₹ {post.price}</div>
               </div>
               <div className="user">
                 <span>Owner :</span>

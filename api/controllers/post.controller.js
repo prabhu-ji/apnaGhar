@@ -1,5 +1,6 @@
 import prisma from "../lib/prisma.js";
 import jwt from "jsonwebtoken";
+  
 
 export const getPosts = async (req, res) => {
   const query = req.query;
@@ -108,100 +109,49 @@ export const getPost = async (req, res) => {
 };
 
 export const addPost = async (req, res) => {
-  const { postData, postDetail } = req.body;
-  const tokenUserId = req.userId;
+   const { postData, postDetail } = req.body;
+   const tokenUserId = req.userId;
+   
+   try {
+     const user = await prisma.user.findUnique({ where: { id: tokenUserId } });
+     if (!user || user.userType !== "seller") {
+       return res.status(403).json({ message: "Only sellers can add posts!" });
+     }
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: tokenUserId },
-    });
-
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized to add posts!" });
-    }
-
-    if (user.userType !== "seller") {
-      return res.status(403).json({ message: "Only sellers can add posts!" });
-    }
-
-    console.log(tokenUserId);
-
-    const newPost = await prisma.post.create({
-      data: {
-        ...postData,
-        isSold: false,
-        isRented: false,
-        user: {
-          connect: { id: tokenUserId }, 
-        },
-        postDetail: {
-          create: postDetail, 
-        },
-      },
-    });
-
-    res.status(201).json(newPost);
-  } catch (err) {
-    console.error("Error creating post:", err);
-    res.status(500).json({ message: "Failed to create post" });
-  }
+     const newPost = await prisma.post.create({
+       data: { ...postData, isSold: false, isRented: false, user: { connect: { id: tokenUserId } }, postDetail: { create: postDetail } },
+       include: { postDetail: true },
+     });
+ 
+     res.status(201).json(newPost);
+   } catch (err) {
+     res.status(500).json({ message: "Failed to create post", error: err.message });
+   }
 };
-
+ 
 export const updatePost = async (req, res) => {
-  const id = req.params.id;
-  const tokenUserId = req.userId;
-  const body = req.body;
+   const id = req.params.id;
+   const tokenUserId = req.userId;
+   const { postData, postDetail } = req.body;
+   
+   try {
+     const post = await prisma.post.findUnique({ where: { id }, include: { postDetail: true } });
+     if (!post || post.userId !== tokenUserId || post.isSold) {
+       return res.status(403).json({ message: "Not authorized!" });
+     }
 
-  try {
-    const post = await prisma.post.findUnique({
-      where: { id },
-      include: { postDetail: true },
-    });
-
-    if (!post) {
-      return res.status(404).json({ message: "Post not found!" });
-    }
-    if (post.userId !== tokenUserId) {
-      return res.status(403).json({ message: "Not authorized!" });
-    }
-    
-    // Check if post is already marked as sold - sold properties can never be updated
-    if (post.isSold) {
-      return res.status(403).json({ message: "Cannot update a sold property!" });
-    }
-    
-    // Check if post is rented - rented properties can be updated by the seller
-    if (post.isRented && !body.postData.hasOwnProperty('isRented')) {
-      // Allow updates if explicitly changing rental status
-      const updatedPost = await prisma.post.update({
-        where: { id },
-        data: {
-          ...body.postData,
-          postDetail: {
-            update: body.postDetail,
-          },
-        },
-      });
-      return res.status(200).json(updatedPost);
-    }
-    
-    const updatedPost = await prisma.post.update({
-      where: { id },
-      data: {
-        ...body.postData,
-        postDetail: {
-          update: body.postDetail,
-        },
-      },
-    });
-
-    res.status(200).json(updatedPost);
-  } catch (err) {
-    console.error("Update Post Error:", err);
-    res.status(500).json({ message: "Failed to update post" });
-  }
+     const updatedPost = await prisma.post.update({
+       where: { id },
+       data: { ...postData, postDetail: { update: postDetail } },
+       include: { postDetail: true },
+     });
+ 
+     res.status(200).json(updatedPost);
+   } catch (err) {
+     res.status(500).json({ message: "Failed to update post", error: err.message });
+   }
 };
-
+ 
 export const deletePost = async (req, res) => {
   const id = req.params.id;
   const tokenUserId = req.userId;
