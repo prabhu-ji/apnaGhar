@@ -15,7 +15,6 @@
         font-size: 4rem;
         color:rgb(6, 179, 179);
         font-weight: 500;
-        margin-bottom: 0.1rem;
         animation: fadeInUp 0.8s ease-out;
       }
 
@@ -78,16 +77,18 @@
       gap: 2rem;
 
       .value-card {
-        background: white;
+        background: rgb(75, 74, 74);
         padding: 2rem;
+        color: #ffffff;
         border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
         cursor: pointer;
 
         &:hover, &.active {
           transform: translateY(-10px);
-          box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 3px 2px 5px teal;
+          
         }
 
         .icon {
@@ -97,12 +98,12 @@
 
         h3 {
           font-size: 1.5rem;
-          color: #2c3e50;
+          color: teal;
           margin-bottom: 1rem;
         }
 
         p {
-          color: #666;
+          color: #e0e0e0;
           line-height: 1.6;
         }
       }
@@ -196,22 +197,23 @@
 
         .quote {
           font-style: italic;
-          color: #8f8d8d;
+          color: #a7a4a4;
         }
       }
     }
   }
 
   .cta-section {
-    background: #1c1c1d;
+    background: #1c1c1dc9;
     text-align: center;
     padding-bottom: 5rem;
     margin-bottom: 3rem;
+    max-width: 100%;
 
     p {
       max-width: 600px;
       margin: 0 auto 2rem;
-      color: #9a9595;
+      color: #bbb5b5;
       font-size: 1.2rem;
     }
 

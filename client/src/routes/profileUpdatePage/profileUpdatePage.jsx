@@ -218,7 +218,7 @@ function ProfileUpdatePage() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 maxLength="6"
-                placeholder="000000"
+                placeholder="------"
               />
             </div>
             

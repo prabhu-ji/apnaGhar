@@ -4,11 +4,28 @@ import prisma from "../lib/prisma.js";
 import OtpService from "../utils/otpService.js";
 
 // Register function
+const usernameRegex = /^[A-Za-z]{3,}$/;  
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;  
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/; 
+
 export const register = async (req, res) => {
   const { username, email, password, userType } = req.body;
 
+  if (!usernameRegex.test(username)) {
+    return res.status(400).json({ message: "Username must contain only letters and be at least 3 characters long." });
+  }
+
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: "Invalid email format." });
+  }
+
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ 
+      message: "Password must be at least 6 characters long and include at least one letter, one digit, and one special character." 
+    });
+  }
+
   try {
-    // Check for existing user before sending OTP
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -19,21 +36,16 @@ export const register = async (req, res) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ 
-        message: "A user with this email or username already exists!" 
-      });
+      return res.status(400).json({ message: "A user with this email or username already exists!" });
     }
-
-    // Initialize OTP process using OtpService
+    2
     const otpResult = await OtpService.initiateOTP(email, "verification");
     
     if (!otpResult.success) {
       return res.status(500).json({ message: "Failed to send OTP email." });
     }
 
-    return res.status(200).json({ 
-      message: "OTP sent successfully. Verify OTP to complete registration." 
-    });
+    return res.status(200).json({ message: "OTP sent successfully. Verify OTP to complete registration." });
   } catch (err) {
     console.error("Register Error:", err);
     res.status(500).json({ message: "Failed to send OTP! " + err.message });
@@ -44,7 +56,6 @@ export const verifyOtp = async (req, res) => {
   const { email, otp, password, username, userType } = req.body;
 
   try {
-    // First check if user already exists
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -55,23 +66,19 @@ export const verifyOtp = async (req, res) => {
     });
 
     if (existingUser) {
-      // Be vague about which field exists for security
       return res.status(400).json({ 
         message: "A user with this email or username already exists!" 
       });
     }
 
-    // Verify OTP using OtpService
     const verificationResult = await OtpService.verifyOTP(email, otp);
     
     if (!verificationResult.valid) {
       return res.status(400).json({ message: verificationResult.message });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the user with a try-catch specifically for unique constraint errors
     try {
       const newUser = await prisma.user.create({
         data: {
@@ -82,7 +89,6 @@ export const verifyOtp = async (req, res) => {
         },
       });
 
-      // Clear OTP after successful registration
       await OtpService.clearOTP(email);
 
       return res.status(201).json({ message: "User registered successfully!" });
@@ -92,7 +98,7 @@ export const verifyOtp = async (req, res) => {
           message: "A user with this email or username already exists!" 
         });
       }
-      throw createError; // Re-throw other errors
+      throw createError; 
     }
   } catch (err) {
     console.error("Verify OTP Error:", err);

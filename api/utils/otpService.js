@@ -69,12 +69,12 @@ class OtpService {
         where: { email },
         update: {
           otp,
-          otpExpires: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+          otpExpires: new Date(Date.now() + 1 * 60 * 1000) // 10 minutes
         },
         create: {
           email,
           otp,
-          otpExpires: new Date(Date.now() + 10 * 60 * 1000)
+          otpExpires: new Date(Date.now() + 1 * 60 * 1000)
         }
       });
       return true;

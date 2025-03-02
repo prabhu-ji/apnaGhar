@@ -34,12 +34,14 @@ nav {
     .logo {
       font-weight: bold;
       font-size: 20px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 10px;
       
       img {
-        width: 28px;
+        width: 7rem;
+        height: 7rem;
       }
       
       span {

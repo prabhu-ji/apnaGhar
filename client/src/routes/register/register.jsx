@@ -1,6 +1,7 @@
 import "./register.scss";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify"; // Import toast for notifications
 import apiRequest from "../../lib/apiRequest";
 
 function Register() {
@@ -21,11 +22,19 @@ function Register() {
     if (otpSent) {
       setTimer(60);
       countdown = setInterval(() => {
-        setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+        setTimer((prev) => {
+          if (prev === 1) {
+            clearInterval(countdown);
+            toast.error("OTP expired! Please register again."); // Show toast notification
+            navigate("/register"); // Redirect to register page
+            setOtpSent(false); // Reset OTP state
+          }
+          return prev > 0 ? prev - 1 : 0;
+        });
       }, 1000);
     }
     return () => clearInterval(countdown);
-  }, [otpSent]);
+  }, [otpSent, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,7 +158,7 @@ function Register() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 maxLength="6"
-                placeholder="000000"
+                placeholder="------"
               />
             </div>
             <button onClick={handleOtpSubmit}>Verify OTP</button>
