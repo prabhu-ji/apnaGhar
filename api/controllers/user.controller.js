@@ -239,7 +239,19 @@ export const profilePosts = async (req, res) => {
       prisma.post.findMany({ where: { userId: tokenUserId } }),
       prisma.savedPost.findMany({
         where: { userId: tokenUserId },
-        include: { post: true },
+        include: { post: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                avatar: true,
+              },
+            },
+          }
+        }
+          // user: true
+        },
       })
     ]);
 

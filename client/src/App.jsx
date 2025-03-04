@@ -16,6 +16,7 @@ import "react-toastify/dist/ReactToastify.css";
 import AboutPage from "./routes/aboutPage/aboutPage";
 import ContactPage from "./routes/contactPage/contactPage";
 import { NotificationProvider } from "./context/NotificationContext";
+import { OpenChatContextProvider } from "./context/OpenChat";
 
 function App() {
   const router = createBrowserRouter([
@@ -47,6 +48,8 @@ function App() {
 
   return (
     <NotificationProvider>
+      <OpenChatContextProvider>
+
       <div className="app">
         <RouterProvider router={router} />
         <ToastContainer
@@ -61,8 +64,9 @@ function App() {
           pauseOnHover
           theme="light"
           className="toast-container"
-        />
+          />
       </div>
+          </OpenChatContextProvider>
     </NotificationProvider>
   );
 }

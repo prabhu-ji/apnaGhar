@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { FaPaperPlane, FaSmile, FaMapMarkerAlt } from "react-icons/fa";
 import apiRequest from "../../lib/apiRequest";
 import { SocketContext } from "../../context/SocketContext";
@@ -10,8 +10,12 @@ import { useNotificationStore } from "../../lib/notificationStore";
 import { useNavigate } from 'react-router-dom';
 
 import "./chat.scss";
+import { useOpenChat } from "../../context/OpenChat";
 
 function Chat({ chats }) {
+  const {openChat} = useOpenChat();
+
+ 
   const [chat, setChat] = useState(null);
   const { currentUser } = useContext(AuthContext);
   const { socket } = useContext(SocketContext);
@@ -47,16 +51,10 @@ function Chat({ chats }) {
     });
     return () => socket.off("receiveMessage");
   }, [chat, socket]);
-
-  const handleOpenChat = async (id, receiver) => {
+  const handleOpenChat = useCallback(async (id, receiver) => {
     // Validate that the receiver exists before opening the chat
-    if (!receiver || !receiver.id) {
+    if (!receiver) {
       console.error("Cannot open chat: Invalid receiver");
-      return;
-    }
-
-    if (chat?.id === id && isChatBoxOpen) {
-      setIsChatBoxOpen(false);
       return;
     }
 
@@ -65,12 +63,19 @@ function Chat({ chats }) {
       if (!res.data.seenBy.includes(currentUser.id)) {
         decrease();
       }
-      setChat({ ...res.data, receiver });
-      setIsChatBoxOpen(true);
+      
+      setChat(prevChat => {
+        if (prevChat?.id === id) {
+          setIsChatBoxOpen(prev => !prev);
+          return prevChat;
+        }
+        setIsChatBoxOpen(true);
+        return { ...res.data, receiver };
+      });
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [currentUser.id, decrease]); // Remove chat and isChatBoxOpen from dependencies
 
   const handleSendMessage = async () => {
     if (!text.trim()) return;
@@ -146,6 +151,27 @@ function Chat({ chats }) {
 
   // Filter out invalid chats that don't have a proper receiver
   const validChats = chats?.filter(c => c.receiver && c.receiver.username);
+
+
+  useEffect(() => {
+    console.log(openChat);
+    console.log("use effect");
+    
+    if (openChat && openChat.id && openChat.receiverId) {
+      console.log("chat is opened");
+      
+      handleOpenChat(openChat.id, openChat.receiverId);
+    }
+    
+  }, [openChat,handleOpenChat]);
+ 
+  // useEffect(() => {
+  //   if (openChat && openChat.id && openChat.receiverId) {
+  //     console.log("Inside the chat component");
+  //     console.log(openChat);
+  //     handleOpenChat(openChat.id, openChat.receiverId);
+  //   }
+  // }, [openChat?.id, openChat?.receiverId]);
 
   return (
     <div className="chat" style={{ backgroundColor: "#000", color: "#fff" }}>

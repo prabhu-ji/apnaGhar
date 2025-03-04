@@ -126,7 +126,7 @@ enum VisitStatus {
 model Visit {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId
   date        DateTime
-  timeSlot    String      // Store as "HH:MM" format
+  timeSlot    String      
   status      VisitStatus @default(PENDING)
   createdAt   DateTime    @default(now())
   

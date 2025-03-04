@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import { AuthContext } from "./AuthContext";
 
@@ -7,7 +7,11 @@ export const SocketContext = createContext();
 export const SocketContextProvider = ({ children }) => {
   const { currentUser } = useContext(AuthContext);
   const [socket, setSocket] = useState(null);
-  
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [connected, setConnected] = useState(false);
+  const [pendingMessages, setPendingMessages] = useState([]);
+
+  // Initialize socket connection
   useEffect(() => {
     if (!currentUser?.id) return; // Don't connect if no user is logged in
     
@@ -19,19 +23,59 @@ export const SocketContextProvider = ({ children }) => {
       withCredentials: true,
       timeout: 10000,
       query: {
-        userId: currentUser.id // Pass user ID as a query parameter
+        userId: currentUser.id
       }
     });
     
-    // Add error handling
-    newSocket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
-    
+    // Add connection handling
     newSocket.on("connect", () => {
       console.log("Socket connected successfully");
-      // Emit user ID after successful connection
+      setConnected(true);
       newSocket.emit("newUser", currentUser.id);
+      
+      // Try to resend any pending messages
+      if (pendingMessages.length > 0) {
+        pendingMessages.forEach(msg => {
+          newSocket.emit("sendMessage", msg);
+        });
+        setPendingMessages([]);
+      }
+    });
+    
+    newSocket.on("disconnect", () => {
+      console.log("Socket disconnected");
+      setConnected(false);
+    });
+    
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      setConnected(false);
+    });
+    
+    // Handle online users
+    newSocket.on("onlineUsers", (users) => {
+      setOnlineUsers(users);
+    });
+    
+    newSocket.on("userOnline", ({ userId }) => {
+      setOnlineUsers(prev => {
+        if (!prev.includes(userId)) {
+          return [...prev, userId];
+        }
+        return prev;
+      });
+    });
+    
+    newSocket.on("userOffline", ({ userId }) => {
+      setOnlineUsers(prev => prev.filter(id => id !== userId));
+    });
+    
+    newSocket.on("connectionAck", (data) => {
+      console.log("Connection acknowledged by server:", data);
+    });
+    
+    newSocket.on("heartbeat", () => {
+      // Keep connection alive
     });
     
     setSocket(newSocket);
@@ -39,10 +83,36 @@ export const SocketContextProvider = ({ children }) => {
     return () => {
       newSocket.disconnect();
     };
-  }, [currentUser?.id]); // Only reconnect if user ID changes
-  
+  }, [currentUser?.id]);
+
+  // Send message function with offline handling
+  const sendMessage = useCallback((receiverId, messageData) => {
+    if (!socket || !connected) {
+      console.log("Socket not connected, queueing message");
+      setPendingMessages(prev => [...prev, { receiverId, data: messageData }]);
+      return false;
+    }
+    
+    const messagePayload = {
+      receiverId,
+      data: {
+        ...messageData,
+        senderId: currentUser.id,
+        timestamp: new Date().toISOString()
+      }
+    };
+    
+    socket.emit("sendMessage", messagePayload);
+    return true;
+  }, [socket, connected, currentUser?.id]);
+
   return (
-    <SocketContext.Provider value={{ socket }}>
+    <SocketContext.Provider value={{ 
+      socket, 
+      connected,
+      onlineUsers,
+      sendMessage
+    }}>
       {children}
     </SocketContext.Provider>
   );

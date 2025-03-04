@@ -33,12 +33,16 @@ const onlineUsers = new Map(); // Using Map for better performance
 
 const addUser = (userId, socketId) => {
   onlineUsers.set(userId, socketId);
+  // Broadcast to all users that a new user is online
+  io.emit("userOnline", { userId });
 };
 
 const removeUser = (socketId) => {
   for (const [userId, sid] of onlineUsers.entries()) {
     if (sid === socketId) {
       onlineUsers.delete(userId);
+      // Broadcast to all users that this user is offline
+      io.emit("userOffline", { userId });
       break;
     }
   }
@@ -52,18 +56,37 @@ const getUser = (userId) => {
 // Socket event handlers
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
+  
+  // Debug event to help troubleshoot
+  socket.emit("connectionAck", { status: "connected", socketId: socket.id });
 
   socket.on("newUser", (userId) => {
     if (userId) {
       addUser(userId, socket.id);
       console.log("Online users:", Array.from(onlineUsers.entries()));
+      // Send current online users to the newly connected user
+      socket.emit("onlineUsers", Array.from(onlineUsers.keys()));
     }
   });
 
   socket.on("sendMessage", ({ receiverId, data }) => {
+    console.log(`Message from ${data.senderId} to ${receiverId}:`, data);
+    
+    // First, send acknowledgment to sender
+    socket.emit("messageSent", { messageId: data.id || Date.now(), status: "sent" });
+    
     const receiver = getUser(receiverId);
     if (receiver) {
       io.to(receiver.socketId).emit("getMessage", data);
+    } else {
+      // If receiver is not online, store the message or handle accordingly
+      console.log(`Receiver ${receiverId} is not online`);
+      // Notify sender that the receiver is offline
+      socket.emit("messageStatus", { 
+        messageId: data.id || Date.now(), 
+        status: "pending", 
+        info: "Receiver is offline" 
+      });
     }
   });
 
@@ -90,8 +113,15 @@ io.on("connection", (socket) => {
   // Error handling
   socket.on("error", (error) => {
     console.error("Socket error:", error);
+    // Try to reconnect
+    socket.connect();
   });
 });
+
+// Simple heartbeat to keep connections alive
+setInterval(() => {
+  io.emit("heartbeat", { timestamp: new Date().toISOString() });
+}, 30000);
 
 // Start server
 const PORT = process.env.PORT || 4000;

@@ -28,6 +28,15 @@ export const getPosts = async (req, res) => {
           lte: parseInt(query.maxPrice) || undefined,
         },
       },
+      include: {
+        user: {
+          select:{
+            id: true,
+            username: true,
+            avatar: true
+          }
+        },
+      },
     });
 
     if (userId) {
@@ -37,7 +46,7 @@ export const getPosts = async (req, res) => {
           userId: userId
         },
         select: {
-          postId: true
+          postId: true,
         }
       });
 

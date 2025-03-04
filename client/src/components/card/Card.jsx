@@ -13,8 +13,10 @@ import HomeIcon from "@mui/icons-material/Home";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { addHours, setHours, setMinutes } from 'date-fns';
+import { useOpenChat } from "../../context/OpenChat";
 
 function Card({ item, onDelete, listType }) {
+  const {setOpenChat}=useOpenChat();
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isSaved, setIsSaved] = useState(item.isSaved || listType === "saved");
@@ -134,19 +136,43 @@ function Card({ item, onDelete, listType }) {
     }
   };
   
-
   const handleChatClick = async (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    if (!currentUser) return navigate("/login"), toast.error("You need to log in to start a chat.");
-    if (!isBuyerUser) return toast.info("Only buyers can initiate chats with sellers.");
-    if (!isPropertyAvailable) return toast.error(`Cannot contact seller for a ${isForSale ? "sold" : "rented"} property`);
+    e.stopPropagation();
+    
+    // Handle authentication and validation
+    if (!currentUser) {
+      toast.error("You need to log in to start a chat.");
+      return navigate("/login");
+    }
+    
+    if (!isBuyerUser) {
+      toast.info("Only buyers can initiate chats with sellers.");
+      return;
+    }
+    
+    if (!isPropertyAvailable) {
+      toast.error(`Cannot contact seller for a ${isForSale ? "sold" : "rented"} property`);
+      return;
+    }
     
     try {
-      const response = await apiRequest.post("/chats", { receiverId: item.userId });
-      response.status === 200 ? navigate("/profile#chat") : toast.error("Failed to start chat.");
+      // Create or find existing chat and send initial message
+      const response = await apiRequest.post("/chats", {
+        receiverId: item.userId,
+        initialMessage: `Hi, I'm interested in your property: ${item.title}`
+      });
+      
+      // Get the chat ID from the response
+      const chatId = response.data.id;
+      console.log("from handle chat"+item.user);
+      
+      setOpenChat({id: chatId,receiverId: item.user});
+      console.log({id:chatId});
+      // Navigate to profile page with specific chat ID as a parameter
+      navigate(`/profile?chatId=${chatId}#chat`);
     } catch (err) {
       console.error("Failed to initiate chat:", err);
-      toast.error("An error occurred while starting the chat.");
+      toast.error("Unable to connect with the seller. Please try again.");
     }
   };
 
@@ -333,13 +359,13 @@ function Card({ item, onDelete, listType }) {
             {/* For buyers when property is available */}
             {currentUser && !isOwnPost && isPropertyAvailable && (
               <>
-                {/* Save button */}
+                {/* Save button - Icon only now */}
                 <button 
                   className={`save-btn ${isSaved ? 'saved' : ''}`} 
                   onClick={handleSave}
                   title={isSaved ? "Remove from saved" : "Save this post"}
                 >
-                  <BookmarkIcon /> {isSaved ? "Saved" : "Save"}
+                  <BookmarkIcon />
                 </button>
                 
                 {/* Schedule visit button - only for buyers */}
@@ -349,7 +375,7 @@ function Card({ item, onDelete, listType }) {
                     onClick={handleScheduleClick}
                     title="Schedule a visit"
                   >
-                    <EventIcon /> Schedule Visit
+                    <EventIcon /> 
                   </button>
                 )}
                 
@@ -360,7 +386,7 @@ function Card({ item, onDelete, listType }) {
                     onClick={handleChatClick}
                     title="Chat with seller"
                   >
-                    <ChatIcon /> Contact
+                    <ChatIcon /> 
                   </button>
                 )}
               </>

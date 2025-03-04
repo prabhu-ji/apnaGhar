@@ -293,7 +293,6 @@ export const readChat = async (req, res) => {
   }
 };
 
-// Add a new function to clean up empty chats
 export const cleanupEmptyChats = async (req, res) => {
   const tokenUserId = req.userId;
   

@@ -2,29 +2,60 @@
 
 .listPage {
   display: flex;
-  height: 100%;
-
+  width: 100%;
+  
   .listContainer {
     flex: 3;
-    height: 100%;
-
-    .wrapper{
-      height: 100%;
+    
+    .wrapper {
       padding-right: 50px;
       display: flex;
       flex-direction: column;
       gap: 50px;
-      overflow-y: scroll;
+      overflow-y: auto;
       padding-bottom: 50px;
     }
   }
+  
   .mapContainer {
     flex: 2;
-    height: 100%;
-    background-color: #fcf5f3;
-
-    @include md{
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background-color: transparent;
+    display: flex;
+    align-items: center; 
+    
+    .mapWrapper {
+      width: 100%;
+      height: 70vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .mapMarker {
+      position: absolute;
+      transform: translate(-50%, -50%);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    
+    .mapContainer {
       display: none;
+    }
+    
+    .listContainer {
+      flex: 1;
+      width: 100%;
+      
+      .wrapper {
+        padding-right: 20px;
+        padding-left: 20px;
+      }
     }
   }
 }
