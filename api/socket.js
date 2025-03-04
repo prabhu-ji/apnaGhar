@@ -6,7 +6,7 @@ import cors from 'cors';
 const app = express();
 const httpServer = createServer(app);
 
-// Configure Express middleware
+
 app.use(cors({
   origin: "http://localhost:5173",
   methods: ["GET", "POST", "PUT"],
@@ -69,19 +69,23 @@ io.on("connection", (socket) => {
     }
   });
 
+ 
+
+
+
   socket.on("sendMessage", ({ receiverId, data }) => {
     console.log(`Message from ${data.senderId} to ${receiverId}:`, data);
-    
-    // First, send acknowledgment to sender
-    socket.emit("messageSent", { messageId: data.id || Date.now(), status: "sent" });
-    
+  
+    // Find the receiver using the user ID
     const receiver = getUser(receiverId);
+  
     if (receiver) {
+      // If the receiver is online, send the message directly to them
       io.to(receiver.socketId).emit("getMessage", data);
+      console.log(`Message sent to receiver ${receiverId} (socketId: ${receiver.socketId})`);
     } else {
-      // If receiver is not online, store the message or handle accordingly
+      // If the receiver is not online, notify the sender that the message is pending
       console.log(`Receiver ${receiverId} is not online`);
-      // Notify sender that the receiver is offline
       socket.emit("messageStatus", { 
         messageId: data.id || Date.now(), 
         status: "pending", 
@@ -89,6 +93,8 @@ io.on("connection", (socket) => {
       });
     }
   });
+  
+
 
   socket.on("sendVisitRequest", ({ receiverId, notification }) => {
     const receiver = getUser(receiverId);
@@ -128,3 +134,4 @@ const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
   console.log(`Socket.io server running on port ${PORT}`);
 });
+

@@ -83,7 +83,7 @@ export const SocketContextProvider = ({ children }) => {
     return () => {
       newSocket.disconnect();
     };
-  }, [currentUser?.id]);
+  }, [currentUser.id, pendingMessages]);
 
   // Send message function with offline handling
   const sendMessage = useCallback((receiverId, messageData) => {

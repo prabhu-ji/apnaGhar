@@ -44,12 +44,15 @@ function Chat({ chats }) {
   }, [searchParams, chats]);
 
   useEffect(() => {
-    socket.on("receiveMessage", (data) => {
+
+  
+    socket.on("getMessage", (data) => {
+      console.log("recived messagew data------------",data)
       if (data.chatId === chat?.id) {
         setChat((prev) => ({ ...prev, messages: [...prev.messages, data] }));
       }
     });
-    return () => socket.off("receiveMessage");
+    return () => socket.off("getMessage");
   }, [chat, socket]);
   const handleOpenChat = useCallback(async (id, receiver) => {
     // Validate that the receiver exists before opening the chat

@@ -52,6 +52,8 @@ export const NotificationProvider = ({ children }) => {
 
   const sendVisitRequest = (receiverId, notification) => {
     if (socket) {
+
+      console.log("yugew---",socket)
       socket.emit('sendVisitRequest', {
         receiverId,
         notification
