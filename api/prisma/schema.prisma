@@ -7,6 +7,22 @@ datasource db {
   url      = "mongodb+srv://prabhuji2910:prabhuji@cluster0.vxiu5.mongodb.net/estate?retryWrites=true&w=majority&appName=Cluster0"
 }
 
+model Rating {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  visitId   String   @db.ObjectId
+  rating    Float
+  comment   String?
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  visit     Visit    @relation(fields: [visitId], references: [id])
+
+  @@unique([postId, userId, visitId])
+}
+
 model Post {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
   title      String
@@ -28,6 +44,8 @@ model Post {
   postDetail PostDetail?
   savedPosts SavedPost[]
   visits     Visit[]
+  ratings   Rating[]
+  totalVisits Int   @default(0)
 }
 
 enum Type {
@@ -88,6 +106,7 @@ model User {
   visitsRequested Visit[] @relation("UserVisitsRequested")
   visitsReceived  Visit[] @relation("UserVisitsReceived")
   notifications   Notification[]
+  ratings   Rating[]
 }
 
 model Otp {
@@ -129,6 +148,7 @@ model Visit {
   timeSlot    String      
   status      VisitStatus @default(PENDING)
   createdAt   DateTime    @default(now())
+  ratings   Rating[]
   
   // Relations
   post        Post        @relation(fields: [postId], references: [id])
@@ -161,6 +181,31 @@ model Notification {
   userId    String           @db.ObjectId
   visit     Visit?           @relation(fields: [visitId], references: [id])
   visitId   String?          @db.ObjectId
+}
+
+model Page {
+  id           String     @id @default(cuid()) @map("_id")
+  userId       String
+  totalViews   Int        @default(0)
+  uniqueViews  Int        @default(0)
+  PageView     PageView[]
+}
+
+model PageView {
+  id         String   @id @default(cuid()) @map("_id")
+  pageId     String
+  viewerId   String
+  ownerId    String
+  date       DateTime
+  hour       Int
+  minute     Int
+  ipAddress  String
+  userAgent  String
+  referrer   String
+  status     String   @default("UNIQUE")
+  createdAt  DateTime @default(now())
+
+  page       Page     @relation(fields: [pageId], references: [id])
 }
 
 // to save changes use : npx prisma db push

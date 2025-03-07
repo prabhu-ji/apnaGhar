@@ -5,7 +5,7 @@ import { AuthContext } from "./AuthContext";
 export const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, logout } = useContext(AuthContext);
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [connected, setConnected] = useState(false);
@@ -13,8 +13,17 @@ export const SocketContextProvider = ({ children }) => {
 
   // Initialize socket connection
   useEffect(() => {
-    if (!currentUser?.id) return; // Don't connect if no user is logged in
-    
+    if (!currentUser?.id) {
+      // Disconnect socket if no user is logged in
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+        setConnected(false);
+        setOnlineUsers([]);
+      }
+      return;
+    }
+
     const newSocket = io("http://localhost:4000", {
       transports: ["websocket", "polling"],
       autoConnect: true,
@@ -26,13 +35,13 @@ export const SocketContextProvider = ({ children }) => {
         userId: currentUser.id
       }
     });
-    
+
     // Add connection handling
     newSocket.on("connect", () => {
       console.log("Socket connected successfully");
       setConnected(true);
       newSocket.emit("newUser", currentUser.id);
-      
+
       // Try to resend any pending messages
       if (pendingMessages.length > 0) {
         pendingMessages.forEach(msg => {
@@ -41,22 +50,22 @@ export const SocketContextProvider = ({ children }) => {
         setPendingMessages([]);
       }
     });
-    
+
     newSocket.on("disconnect", () => {
       console.log("Socket disconnected");
       setConnected(false);
     });
-    
+
     newSocket.on("connect_error", (error) => {
       console.error("Socket connection error:", error);
       setConnected(false);
     });
-    
+
     // Handle online users
     newSocket.on("onlineUsers", (users) => {
       setOnlineUsers(users);
     });
-    
+
     newSocket.on("userOnline", ({ userId }) => {
       setOnlineUsers(prev => {
         if (!prev.includes(userId)) {
@@ -65,25 +74,25 @@ export const SocketContextProvider = ({ children }) => {
         return prev;
       });
     });
-    
+
     newSocket.on("userOffline", ({ userId }) => {
       setOnlineUsers(prev => prev.filter(id => id !== userId));
     });
-    
+
     newSocket.on("connectionAck", (data) => {
       console.log("Connection acknowledged by server:", data);
     });
-    
+
     newSocket.on("heartbeat", () => {
       // Keep connection alive
     });
-    
+
     setSocket(newSocket);
-    
+
     return () => {
       newSocket.disconnect();
     };
-  }, [currentUser.id, pendingMessages]);
+  }, [currentUser?.id, pendingMessages]);
 
   // Send message function with offline handling
   const sendMessage = useCallback((receiverId, messageData) => {
@@ -92,7 +101,7 @@ export const SocketContextProvider = ({ children }) => {
       setPendingMessages(prev => [...prev, { receiverId, data: messageData }]);
       return false;
     }
-    
+
     const messagePayload = {
       receiverId,
       data: {
@@ -101,17 +110,32 @@ export const SocketContextProvider = ({ children }) => {
         timestamp: new Date().toISOString()
       }
     };
-    
+
     socket.emit("sendMessage", messagePayload);
     return true;
   }, [socket, connected, currentUser?.id]);
 
+  // New logout handler
+  const handleLogout = useCallback(() => {
+    // Disconnect socket
+    if (socket) {
+      socket.disconnect();
+      setSocket(null);
+      setConnected(false);
+      setOnlineUsers([]);
+    }
+    
+    // Call the original logout method from AuthContext
+    logout();
+  }, [socket, logout]);
+
   return (
-    <SocketContext.Provider value={{ 
-      socket, 
+    <SocketContext.Provider value={{
+      socket,
       connected,
       onlineUsers,
-      sendMessage
+      sendMessage,
+      logout: handleLogout  // Provide custom logout method
     }}>
       {children}
     </SocketContext.Provider>
