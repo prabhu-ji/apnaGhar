@@ -15,7 +15,7 @@ import userRoute from "./routes/user.route.js";
 import chatRoute from "./routes/chat.route.js";
 import messageRoute from "./routes/message.route.js";
 import visitRoute from "./routes/visit.route.js";
-import ratingRoute from "./routes/rating.route.js";
+// import ratingRoute from "./routes/rating.route.js";
 //import verificationRoute from "./routes/verification.route.js";
 
 
@@ -34,7 +34,7 @@ app.use("/api/posts", postRoute);
 app.use("/api/chats", chatRoute);
 app.use("/api/messages", messageRoute);
 app.use("/api/visits", visitRoute);
-app.use("/api/rating", ratingRoute);
+// app.use("/api/rating", ratingRoute);
 //app.use("/api/verification", verificationRoute);
 
 
