@@ -8,9 +8,9 @@ import {
   updatePost,
   toggleSoldStatus,
   toggleRentedStatus,
-  getPageViewStats,
-  getPageViewFrequencyLabel,
-  trackPageView
+  // getPageViewStats,
+  // getPageViewFrequencyLabel,
+  // trackPageView
 } from "../controllers/post.controller.js";
 
 const router = express.Router();
@@ -23,7 +23,7 @@ router.delete("/:id", verifyToken, deletePost);
 router.patch('/:id/toggle-sold', verifyToken, toggleSoldStatus);
 router.patch('/:id/toggle-rented', verifyToken, toggleRentedStatus);
 
-router.get("/:id/visit-count", verifyToken, getPageViewStats);
-router.get("/:id/visit-frequency", verifyToken, getPageViewFrequencyLabel);
-router.post("/:id/track-view", verifyToken, trackPageView);
+// router.get("/:id/visit-count", verifyToken, getPageViewStats);
+// router.get("/:id/visit-frequency", verifyToken, getPageViewFrequencyLabel);
+// router.post("/:id/track-view", verifyToken, trackPageView);
 export default router;

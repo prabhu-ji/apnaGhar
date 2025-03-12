@@ -1,11 +1,5 @@
 import prisma from "../lib/prisma.js";
 import jwt from "jsonwebtoken";
-
-
-/**
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- */
   
 
 export const getPosts = async (req, res) => {
@@ -329,150 +323,162 @@ export const toggleRentedStatus = async (req, res) => {
   }
 };
 
-const PageViewFrequency = {
-  RARE: 'Rare Visits',
-  LOW: 'Low Popularity',
-  MODERATE: 'Moderate Popularity',
-  HIGH: 'High Popularity'
-};
 
 
-export const getPageViewFrequencyLabel = (totalViews) => {
-  if (totalViews > 100) return PageViewFrequency.HIGH;
-  if (totalViews > 50) return PageViewFrequency.MODERATE;
-  if (totalViews > 10) return PageViewFrequency.LOW;
-  return PageViewFrequency.RARE;
-};
 
-export const trackPageView = async (req, res) => {
-  const pageId = req.params.id;
-  const tokenUserId = req.userId;
 
-  try {
-    const page = await prisma.page.findUnique({
-      where: { id: pageId }
-    });
 
-    if (!page) {
-      return res.status(404).json({ message: "Page not found" });
-    }
 
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
-    // Check for existing view within the last hour
-    const existingPageView = await prisma.pageView.findFirst({
-      where: {
-        pageId: pageId,
-        viewerId: tokenUserId,
-        createdAt: {
-          gte: oneHourAgo
-        }
-      }
-    });
 
-    // If no recent view, create a new page view record
-    if (!existingPageView) {
-      await prisma.pageView.create({
-        data: {
-          pageId: pageId,
-          viewerId: tokenUserId,
-          ownerId: page.userId,
-          date: now,
-          hour: now.getHours(),
-          minute: now.getMinutes(),
-          ipAddress: req.ip,
-          userAgent: req.get('User-Agent') || 'Unknown',
-          referrer: req.get('Referer') || 'Direct',
-          status: 'UNIQUE'
-        }
-      });
 
-      // Increment page view counters
-      await prisma.page.update({
-        where: { id: pageId },
-        data: {
-          totalViews: { increment: 1 },
-          uniqueViews: { increment: 1 }
-        }
-      });
-    }
 
-    // Get comprehensive view metrics
-    const viewMetrics = await prisma.pageView.aggregate({
-      where: { 
-        pageId: pageId,
-        status: 'UNIQUE'
-      },
-      _count: {
-        pageId: true
-      },
-      _max: {
-        createdAt: true
-      }
-    });
 
-    // Get hourly breakdown of views
-    const hourlyViews = await prisma.pageView.groupBy({
-      by: ['hour'],
-      where: { 
-        pageId: pageId,
-        status: 'UNIQUE'
-      },
-      _count: {
-        pageId: true
-      }
-    });
 
-    res.status(200).json({
-      totalViews: viewMetrics._count.pageId,
-      lastViewedAt: viewMetrics._max.createdAt,
-      viewFrequency: getPageViewFrequencyLabel(viewMetrics._count.pageId),
-      hourlyBreakdown: hourlyViews.map(hourView => ({
-        hour: hourView.hour,
-        viewCount: hourView._count.pageId
-      }))
-    });
+// const PageViewFrequency = {
+//   RARE: 'Rare Visits',
+//   LOW: 'Low Popularity',
+//   MODERATE: 'Moderate Popularity',
+//   HIGH: 'High Popularity'
+// };
 
-  } catch (err) {
-    console.error("Page View Tracking Error:", err);
-    res.status(500).json({ 
-      message: "Failed to track page view", 
-      error: err instanceof Error ? err.message : 'Unknown error' 
-    });
-  }
-};
 
-export const getPageViewStats = async (req, res) => {
-  const pageId = req.params.id;
+// export const getPageViewFrequencyLabel = (totalViews) => {
+//   if (totalViews > 100) return PageViewFrequency.HIGH;
+//   if (totalViews > 50) return PageViewFrequency.MODERATE;
+//   if (totalViews > 10) return PageViewFrequency.LOW;
+//   return PageViewFrequency.RARE;
+// };
 
-  try {
-    const pageViewStats = await prisma.page.findUnique({
-      where: { id: pageId },
-      select: {
-        totalViews: true,
-        uniqueViews: true,
-        _count: {
-          select: { 
-            PageView: {
-              where: { status: 'UNIQUE' }
-            }
-          }
-        }
-      }
-    });
+// export const trackPageView = async (req, res) => {
+//   const pageId = req.params.id;
+//   const tokenUserId = req.userId;
 
-    if (!pageViewStats) {
-      return res.status(404).json({ message: "Page not found" });
-    }
+//   try {
+//     const page = await prisma.page.findUnique({
+//       where: { id: pageId }
+//     });
 
-    res.status(200).json({
-      totalViews: pageViewStats.totalViews,
-      uniqueViews: pageViewStats.uniqueViews,
-      viewFrequency: getPageViewFrequencyLabel(pageViewStats.totalViews)
-    });
-  } catch (err) {
-    console.error("Page View Stats Error:", err);
-    res.status(500).json({ message: "Failed to retrieve page view statistics" });
-  }
-};
+//     if (!page) {
+//       return res.status(404).json({ message: "Page not found" });
+//     }
+
+//     const now = new Date();
+//     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+//     // Check for existing view within the last hour
+//     const existingPageView = await prisma.pageView.findFirst({
+//       where: {
+//         pageId: pageId,
+//         viewerId: tokenUserId,
+//         createdAt: {
+//           gte: oneHourAgo
+//         }
+//       }
+//     });
+
+//     // If no recent view, create a new page view record
+//     if (!existingPageView) {
+//       await prisma.pageView.create({
+//         data: {
+//           pageId: pageId,
+//           viewerId: tokenUserId,
+//           ownerId: page.userId,
+//           date: now,
+//           hour: now.getHours(),
+//           minute: now.getMinutes(),
+//           ipAddress: req.ip,
+//           userAgent: req.get('User-Agent') || 'Unknown',
+//           referrer: req.get('Referer') || 'Direct',
+//           status: 'UNIQUE'
+//         }
+//       });
+
+//       // Increment page view counters
+//       await prisma.page.update({
+//         where: { id: pageId },
+//         data: {
+//           totalViews: { increment: 1 },
+//           uniqueViews: { increment: 1 }
+//         }
+//       });
+//     }
+
+//     // Get comprehensive view metrics
+//     const viewMetrics = await prisma.pageView.aggregate({
+//       where: { 
+//         pageId: pageId,
+//         status: 'UNIQUE'
+//       },
+//       _count: {
+//         pageId: true
+//       },
+//       _max: {
+//         createdAt: true
+//       }
+//     });
+
+//     // Get hourly breakdown of views
+//     const hourlyViews = await prisma.pageView.groupBy({
+//       by: ['hour'],
+//       where: { 
+//         pageId: pageId,
+//         status: 'UNIQUE'
+//       },
+//       _count: {
+//         pageId: true
+//       }
+//     });
+
+//     res.status(200).json({
+//       totalViews: viewMetrics._count.pageId,
+//       lastViewedAt: viewMetrics._max.createdAt,
+//       viewFrequency: getPageViewFrequencyLabel(viewMetrics._count.pageId),
+//       hourlyBreakdown: hourlyViews.map(hourView => ({
+//         hour: hourView.hour,
+//         viewCount: hourView._count.pageId
+//       }))
+//     });
+
+//   } catch (err) {
+//     console.error("Page View Tracking Error:", err);
+//     res.status(500).json({ 
+//       message: "Failed to track page view", 
+//       error: err instanceof Error ? err.message : 'Unknown error' 
+//     });
+//   }
+// };
+
+// export const getPageViewStats = async (req, res) => {
+//   const pageId = req.params.id;
+
+//   try {
+//     const pageViewStats = await prisma.page.findUnique({
+//       where: { id: pageId },
+//       select: {
+//         totalViews: true,
+//         uniqueViews: true,
+//         _count: {
+//           select: { 
+//             PageView: {
+//               where: { status: 'UNIQUE' }
+//             }
+//           }
+//         }
+//       }
+//     });
+
+//     if (!pageViewStats) {
+//       return res.status(404).json({ message: "Page not found" });
+//     }
+
+//     res.status(200).json({
+//       totalViews: pageViewStats.totalViews,
+//       uniqueViews: pageViewStats.uniqueViews,
+//       viewFrequency: getPageViewFrequencyLabel(pageViewStats.totalViews)
+//     });
+//   } catch (err) {
+//     console.error("Page View Stats Error:", err);
+//     res.status(500).json({ message: "Failed to retrieve page view statistics" });
+//   }
+// };

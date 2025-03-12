@@ -30,7 +30,7 @@ export const getChats = async (req, res) => {
 
     const userMap = users.reduce((acc, user) => {
       acc[user.id] = user;
-      return acc;
+      return acc;             
     }, {});
 
     const formattedChats = chatsWithMessages.map(chat => {

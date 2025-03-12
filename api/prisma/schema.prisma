@@ -22,31 +22,10 @@ model Rating {
 
   @@unique([postId, userId, visitId])
 }
-
-model Post {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  title      String
-  price      Int
-  images     String[]
-  address    String
-  city       String
-  bedroom    Int
-  bathroom   Int
-  latitude   String
-  longitude  String
-  type       Type
-  property   Property
-  isSold     Boolean     @default(false)  
-  isRented   Boolean     @default(false)  // Add this field if it's missing
-  createdAt  DateTime    @default(now())
-  user       User        @relation(fields: [userId], references: [id])
-  userId     String      @db.ObjectId
-  postDetail PostDetail?
-  savedPosts SavedPost[]
-  visits     Visit[]
-  ratings   Rating[]
-  totalVisits Int   @default(0)
+generator client {
+  provider = "prisma-client-js"
 }
+
 
 enum Type {
   buy

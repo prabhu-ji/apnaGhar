@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef, useCallback } from "react";
+import { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { FaPaperPlane, FaSmile, FaMapMarkerAlt } from "react-icons/fa";
 import apiRequest from "../../lib/apiRequest";
 import { SocketContext } from "../../context/SocketContext";
@@ -14,8 +14,6 @@ import { useOpenChat } from "../../context/OpenChat";
 
 function Chat({ chats }) {
   const {openChat} = useOpenChat();
-
- 
   const [chat, setChat] = useState(null);
   const { currentUser } = useContext(AuthContext);
   const { socket } = useContext(SocketContext);
