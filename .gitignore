@@ -6,3 +6,5 @@ jest.config.js
 .env.example
 
 __tests__
+__mocks__
+babel.config.js
