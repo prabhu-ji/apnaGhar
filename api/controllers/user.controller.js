@@ -1,6 +1,8 @@
-import prisma from "../lib/prisma.js";
-import bcrypt from "bcrypt";
-import OtpService from "../utils/otpService.js";
+/* eslint-disable no-unused-vars */
+
+import prisma from '../lib/prisma.js';
+import bcrypt from 'bcrypt';
+import OtpService from '../utils/otpService.js';
 
 // Get all users
 export const getUsers = async (req, res) => {
@@ -8,8 +10,8 @@ export const getUsers = async (req, res) => {
     const users = await prisma.user.findMany();
     res.status(200).json(users);
   } catch (err) {
-    console.error("Error fetching users:", err);
-    res.status(500).json({ message: "Failed to get users!" });
+    console.error('Error fetching users:', err);
+    res.status(500).json({ message: 'Failed to get users!' });
   }
 };
 
@@ -22,13 +24,13 @@ export const getUser = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found!" });
+      return res.status(404).json({ message: 'User not found!' });
     }
 
     res.status(200).json(user);
   } catch (err) {
-    console.error("Error fetching user:", err);
-    res.status(500).json({ message: "Failed to get user!" });
+    console.error('Error fetching user:', err);
+    res.status(500).json({ message: 'Failed to get user!' });
   }
 };
 
@@ -38,44 +40,51 @@ export const updateUser = async (req, res) => {
   const tokenUserId = req.userId;
 
   if (id !== tokenUserId) {
-    return res.status(403).json({ message: "Not Authorized!" });
+    return res.status(403).json({ message: 'Not Authorized!' });
   }
 
   const { currentPassword, password, avatar, email, ...inputs } = req.body;
-  
+
   try {
     // Get current user data
     const currentUser = await prisma.user.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!currentUser) {
-      return res.status(404).json({ message: "User not found!" });
+      return res.status(404).json({ message: 'User not found!' });
     }
-    
+
     // Verify current password if there are changes to be made
     if (Object.keys(inputs).length > 0 || password || email || avatar) {
       if (!currentPassword) {
-        return res.status(400).json({ message: "Current password is required to make changes!" });
+        return res
+          .status(400)
+          .json({ message: 'Current password is required to make changes!' });
       }
-      
-      const validPassword = await bcrypt.compare(currentPassword, currentUser.password);
+
+      const validPassword = await bcrypt.compare(
+        currentPassword,
+        currentUser.password
+      );
       if (!validPassword) {
-        return res.status(401).json({ message: "Current password is incorrect!" });
+        return res
+          .status(401)
+          .json({ message: 'Current password is incorrect!' });
       }
     }
 
     // Check username availability if it's being changed
     if (inputs.username && inputs.username !== currentUser.username) {
       const existingUser = await prisma.user.findFirst({
-        where: { 
+        where: {
           username: inputs.username,
-          NOT: { id }
+          NOT: { id },
         },
       });
 
       if (existingUser) {
-        return res.status(400).json({ message: "Username is already taken!" });
+        return res.status(400).json({ message: 'Username is already taken!' });
       }
     }
 
@@ -83,20 +92,22 @@ export const updateUser = async (req, res) => {
     if (email && email !== currentUser.email) {
       // Check if email is already in use
       const existingEmailUser = await prisma.user.findFirst({
-        where: { 
+        where: {
           email,
-          NOT: { id }
+          NOT: { id },
         },
       });
 
       if (existingEmailUser) {
-        return res.status(400).json({ message: "Email is already in use!" });
+        return res.status(400).json({ message: 'Email is already in use!' });
       }
 
       // Send OTP to the new email
-      const otpResult = await OtpService.initiateOTP(email, "update");
+      const otpResult = await OtpService.initiateOTP(email, 'update');
       if (!otpResult.success) {
-        return res.status(500).json({ message: "Failed to send verification email!" });
+        return res
+          .status(500)
+          .json({ message: 'Failed to send verification email!' });
       }
 
       // Update user with temporary email and other fields
@@ -106,8 +117,8 @@ export const updateUser = async (req, res) => {
           ...inputs,
           ...(password && { password: await bcrypt.hash(password, 10) }),
           ...(avatar && { avatar }),
-          tempEmail: email
-        }
+          tempEmail: email,
+        },
       });
 
       const { password: _, ...rest } = updatedUser;
@@ -115,7 +126,7 @@ export const updateUser = async (req, res) => {
         ...rest,
         requiresOTP: true,
         tempEmail: email,
-        message: "Please verify your new email address"
+        message: 'Please verify your new email address',
       });
     }
 
@@ -125,15 +136,15 @@ export const updateUser = async (req, res) => {
       data: {
         ...inputs,
         ...(password && { password: await bcrypt.hash(password, 10) }),
-        ...(avatar && { avatar })
+        ...(avatar && { avatar }),
       },
     });
 
     const { password: _, ...rest } = updatedUser;
     res.status(200).json(rest);
   } catch (err) {
-    console.error("Error updating user:", err);
-    res.status(500).json({ message: "Failed to update user!" });
+    console.error('Error updating user:', err);
+    res.status(500).json({ message: 'Failed to update user!' });
   }
 };
 
@@ -143,17 +154,19 @@ export const verifyEmailUpdate = async (req, res) => {
   const tokenUserId = req.userId;
 
   if (id !== tokenUserId) {
-    return res.status(403).json({ message: "Not Authorized!" });
+    return res.status(403).json({ message: 'Not Authorized!' });
   }
 
   try {
     // Get user and verify they requested this email change
     const user = await prisma.user.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!user || user.tempEmail !== email) {
-      return res.status(400).json({ message: "Invalid email verification request!" });
+      return res
+        .status(400)
+        .json({ message: 'Invalid email verification request!' });
     }
 
     // Verify the OTP
@@ -167,8 +180,8 @@ export const verifyEmailUpdate = async (req, res) => {
       where: { id },
       data: {
         email: email,
-        tempEmail: null  // Clear the temporary email
-      }
+        tempEmail: null, // Clear the temporary email
+      },
     });
 
     // Clear the OTP after successful verification
@@ -177,8 +190,8 @@ export const verifyEmailUpdate = async (req, res) => {
     const { password, ...rest } = updatedUser;
     res.status(200).json(rest);
   } catch (err) {
-    console.error("Error verifying email:", err);
-    res.status(500).json({ message: "Failed to verify email!" });
+    console.error('Error verifying email:', err);
+    res.status(500).json({ message: 'Failed to verify email!' });
   }
 };
 
@@ -191,23 +204,25 @@ export const savePost = async (req, res) => {
     // Validate post and user
     const [post, user] = await Promise.all([
       prisma.post.findUnique({ where: { id: postId } }),
-      prisma.user.findUnique({ where: { id: userId } })
+      prisma.user.findUnique({ where: { id: userId } }),
     ]);
-    
+
     if (!post) {
-      return res.status(404).json({ message: "Post not found!" });
+      return res.status(404).json({ message: 'Post not found!' });
     }
-    
+
     if (!user) {
-      return res.status(403).json({ message: "Unauthorized user!" });
+      return res.status(403).json({ message: 'Unauthorized user!' });
     }
 
     // Prevent sellers from saving other sellers' posts
-    if (user.userType === "seller") {
-      const postOwner = await prisma.user.findUnique({ where: { id: post.userId } });
-      if (postOwner && postOwner.userType === "seller") {
+    if (user.userType === 'seller') {
+      const postOwner = await prisma.user.findUnique({
+        where: { id: post.userId },
+      });
+      if (postOwner && postOwner.userType === 'seller') {
         return res.status(403).json({
-          message: "Login with a buyer account to interact with this post.",
+          message: 'Login with a buyer account to interact with this post.',
         });
       }
     }
@@ -219,14 +234,14 @@ export const savePost = async (req, res) => {
 
     if (existingSavedPost) {
       await prisma.savedPost.delete({ where: { id: existingSavedPost.id } });
-      return res.status(200).json({ message: "Post removed from saved list" });
+      return res.status(200).json({ message: 'Post removed from saved list' });
     }
 
     await prisma.savedPost.create({ data: { userId, postId } });
-    res.status(200).json({ message: "Post saved successfully" });
+    res.status(200).json({ message: 'Post saved successfully' });
   } catch (error) {
-    console.error("Error saving post:", error);
-    res.status(500).json({ message: "Failed to save/unsave post!" });
+    console.error('Error saving post:', error);
+    res.status(500).json({ message: 'Failed to save/unsave post!' });
   }
 };
 
@@ -239,27 +254,28 @@ export const profilePosts = async (req, res) => {
       prisma.post.findMany({ where: { userId: tokenUserId } }),
       prisma.savedPost.findMany({
         where: { userId: tokenUserId },
-        include: { post: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                avatar: true,
+        include: {
+          post: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  avatar: true,
+                },
               },
             },
-          }
-        }
+          },
           // user: true
         },
-      })
+      }),
     ]);
 
     const savedPosts = saved.map((item) => item.post);
     res.status(200).json({ userPosts, savedPosts });
   } catch (err) {
-    console.error("Error fetching profile posts:", err);
-    res.status(500).json({ message: "Failed to get profile posts!" });
+    console.error('Error fetching profile posts:', err);
+    res.status(500).json({ message: 'Failed to get profile posts!' });
   }
 };
 
@@ -276,8 +292,8 @@ export const getNotificationCount = async (req, res) => {
 
     res.status(200).json(notificationCount);
   } catch (err) {
-    console.error("Error fetching notifications:", err);
-    res.status(500).json({ message: "Failed to get notifications!" });
+    console.error('Error fetching notifications:', err);
+    res.status(500).json({ message: 'Failed to get notifications!' });
   }
 };
 
@@ -287,7 +303,7 @@ export const deleteUser = async (req, res) => {
   const tokenUserId = req.userId;
 
   if (id !== tokenUserId) {
-    return res.status(403).json({ message: "Not Authorized!" });
+    return res.status(403).json({ message: 'Not Authorized!' });
   }
 
   try {
@@ -295,37 +311,39 @@ export const deleteUser = async (req, res) => {
     await prisma.$transaction([
       // Delete user's saved posts
       prisma.savedPost.deleteMany({
-        where: { userId: id }
+        where: { userId: id },
       }),
-      
+
       // Delete user's posts
       prisma.post.deleteMany({
-        where: { userId: id }
+        where: { userId: id },
       }),
-      
+
       // Update chat userIDs to remove the user
       prisma.chat.updateMany({
         where: {
-          userIDs: { hasSome: [id] }
+          userIDs: { hasSome: [id] },
         },
         data: {
           userIDs: {
-            set: prisma.chat.findUnique({
-              where: { id: "chatId" }
-            }).userIDs.filter(userId => userId !== id)
-          }
-        }
+            set: prisma.chat
+              .findUnique({
+                where: { id: 'chatId' },
+              })
+              .userIDs.filter((userId) => userId !== id),
+          },
+        },
       }),
-      
+
       // Finally, delete the user
       prisma.user.delete({
-        where: { id }
-      })
+        where: { id },
+      }),
     ]);
 
-    res.status(200).json({ message: "User deleted successfully" });
+    res.status(200).json({ message: 'User deleted successfully' });
   } catch (err) {
-    console.error("Error deleting user:", err);
-    res.status(500).json({ message: "Failed to delete user!" });
+    console.error('Error deleting user:', err);
+    res.status(500).json({ message: 'Failed to delete user!' });
   }
 };

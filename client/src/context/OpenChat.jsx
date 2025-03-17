@@ -9,6 +9,7 @@ export const OpenChatContextProvider = ({ children }) => {
     </OpenChatContext.Provider>
   );
 };
+// eslint-disable-next-line react-refresh/only-export-components
 export const useOpenChat =()=>{
     const context = useContext(OpenChatContext);
     if (!context) {

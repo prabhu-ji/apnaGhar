@@ -92,6 +92,7 @@ export const SocketContextProvider = ({ children }) => {
     return () => {
       newSocket.disconnect();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id, pendingMessages]);
 
   // Send message function with offline handling

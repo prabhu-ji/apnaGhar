@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma.js";
+import prisma from '../lib/prisma.js';
 
 export const getChats = async (req, res) => {
   const tokenUserId = req.userId;
@@ -11,16 +11,18 @@ export const getChats = async (req, res) => {
       },
       include: {
         messages: {
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           take: 1, // Get only the latest message
         },
       },
     });
 
     // Filter out chats with no messages
-    const chatsWithMessages = chats.filter(chat => chat.messages.length > 0);
+    const chatsWithMessages = chats.filter((chat) => chat.messages.length > 0);
 
-    const userIdsToFetch = chatsWithMessages.flatMap(chat => chat.userIDs).filter(id => id !== tokenUserId);
+    const userIdsToFetch = chatsWithMessages
+      .flatMap((chat) => chat.userIDs)
+      .filter((id) => id !== tokenUserId);
     const uniqueUserIds = [...new Set(userIdsToFetch)];
 
     const users = await prisma.user.findMany({
@@ -30,27 +32,29 @@ export const getChats = async (req, res) => {
 
     const userMap = users.reduce((acc, user) => {
       acc[user.id] = user;
-      return acc;             
+      return acc;
     }, {});
 
-    const formattedChats = chatsWithMessages.map(chat => {
-      const receiverId = chat.userIDs.find(id => id !== tokenUserId);
-      const receiver = userMap[receiverId] || null;
-      
-      // Only include chats with valid receivers
-      if (!receiver) return null;
-      
-      return { 
-        ...chat, 
-        receiver,
-        lastMessage: chat.messages[0]?.text || ""
-      };
-    }).filter(Boolean); // Remove null entries
+    const formattedChats = chatsWithMessages
+      .map((chat) => {
+        const receiverId = chat.userIDs.find((id) => id !== tokenUserId);
+        const receiver = userMap[receiverId] || null;
+
+        // Only include chats with valid receivers
+        if (!receiver) return null;
+
+        return {
+          ...chat,
+          receiver,
+          lastMessage: chat.messages[0]?.text || '',
+        };
+      })
+      .filter(Boolean); // Remove null entries
 
     res.status(200).json(formattedChats);
   } catch (err) {
-    console.error("Error fetching chats:", err);
-    res.status(500).json({ message: "Failed to get chats!" });
+    console.error('Error fetching chats:', err);
+    res.status(500).json({ message: 'Failed to get chats!' });
   }
 };
 
@@ -65,16 +69,18 @@ export const getChat = async (req, res) => {
         userIDs: { has: tokenUserId },
       },
       include: {
-        messages: { orderBy: { createdAt: "asc" } },
+        messages: { orderBy: { createdAt: 'asc' } },
       },
     });
 
-    if (!chat) return res.status(404).json({ message: "Chat not found!" });
+    if (!chat) return res.status(404).json({ message: 'Chat not found!' });
 
     // Get the other user in the chat
-    const otherUserId = chat.userIDs.find(id => id !== tokenUserId);
+    const otherUserId = chat.userIDs.find((id) => id !== tokenUserId);
     if (!otherUserId) {
-      return res.status(400).json({ message: "Invalid chat: Missing other user" });
+      return res
+        .status(400)
+        .json({ message: 'Invalid chat: Missing other user' });
     }
 
     // Get the other user's information
@@ -84,7 +90,9 @@ export const getChat = async (req, res) => {
     });
 
     if (!otherUser) {
-      return res.status(400).json({ message: "Invalid chat: Other user not found" });
+      return res
+        .status(400)
+        .json({ message: 'Invalid chat: Other user not found' });
     }
 
     if (!chat.seenBy.includes(tokenUserId)) {
@@ -99,13 +107,13 @@ export const getChat = async (req, res) => {
     // Include the receiver information in the response
     const responseChat = {
       ...chat,
-      receiver: otherUser
+      receiver: otherUser,
     };
 
     res.status(200).json(responseChat);
   } catch (err) {
-    console.error("Error fetching chat:", err);
-    res.status(500).json({ message: "Failed to get chat!" });
+    console.error('Error fetching chat:', err);
+    res.status(500).json({ message: 'Failed to get chat!' });
   }
 };
 
@@ -116,34 +124,36 @@ export const sendLocation = async (req, res) => {
   try {
     // Check if chat exists and user is authorized to access it
     const chat = await prisma.chat.findFirst({
-      where: { 
+      where: {
         id: chatId,
-        userIDs: { has: tokenUserId }
-      }
+        userIDs: { has: tokenUserId },
+      },
     });
 
     if (!chat) {
-      return res.status(404).json({ message: "Chat not found!" });
+      return res.status(404).json({ message: 'Chat not found!' });
     }
 
     // Ensure chat has at least two users
     if (!chat.userIDs || chat.userIDs.length < 2) {
-      return res.status(400).json({ message: "Invalid chat: Missing users" });
+      return res.status(400).json({ message: 'Invalid chat: Missing users' });
     }
 
     // Get the other user in the chat
-    const receiverId = chat.userIDs.find(id => id !== tokenUserId);
+    const receiverId = chat.userIDs.find((id) => id !== tokenUserId);
     if (!receiverId) {
-      return res.status(400).json({ message: "Invalid chat: Missing receiver" });
+      return res
+        .status(400)
+        .json({ message: 'Invalid chat: Missing receiver' });
     }
 
     // Verify receiver exists
     const receiver = await prisma.user.findUnique({
-      where: { id: receiverId }
+      where: { id: receiverId },
     });
 
     if (!receiver) {
-      return res.status(400).json({ message: "Receiver not found!" });
+      return res.status(400).json({ message: 'Receiver not found!' });
     }
 
     const message = await prisma.message.create({
@@ -165,8 +175,8 @@ export const sendLocation = async (req, res) => {
 
     res.status(201).json(message);
   } catch (err) {
-    console.error("Error sending location:", err);
-    res.status(500).json({ message: "Failed to send location" });
+    console.error('Error sending location:', err);
+    res.status(500).json({ message: 'Failed to send location' });
   }
 };
 
@@ -176,26 +186,26 @@ export const addChat = async (req, res) => {
 
   try {
     if (!receiverId) {
-      return res.status(400).json({ message: "Receiver ID is required!" });
+      return res.status(400).json({ message: 'Receiver ID is required!' });
     }
-    
+
     // Validate that receiver exists
     const receiver = await prisma.user.findUnique({
-      where: { id: receiverId }
+      where: { id: receiverId },
     });
-    
+
     if (!receiver) {
-      return res.status(404).json({ message: "Receiver not found!" });
+      return res.status(404).json({ message: 'Receiver not found!' });
     }
 
     // Check if chat already exists between these users
     const existingChat = await prisma.chat.findFirst({
       where: {
-        userIDs: { hasEvery: [tokenUserId, receiverId] }
+        userIDs: { hasEvery: [tokenUserId, receiverId] },
       },
       include: {
         messages: {
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           take: 1,
         },
       },
@@ -206,14 +216,14 @@ export const addChat = async (req, res) => {
       return res.status(200).json({
         ...existingChat,
         receiver,
-        lastMessage: existingChat.messages[0]?.text || ""
+        lastMessage: existingChat.messages[0]?.text || '',
       });
     }
 
     // Instead of creating an empty chat, require an initial message
     if (!req.body.initialMessage) {
-      return res.status(400).json({ 
-        message: "Initial message is required to create a new chat!"
+      return res.status(400).json({
+        message: 'Initial message is required to create a new chat!',
       });
     }
 
@@ -247,11 +257,11 @@ export const addChat = async (req, res) => {
       ...newChat,
       receiver,
       messages: [message],
-      lastMessage: message.text
+      lastMessage: message.text,
     });
   } catch (err) {
-    console.error("Error adding chat:", err);
-    res.status(500).json({ message: "Failed to add chat!" });
+    console.error('Error adding chat:', err);
+    res.status(500).json({ message: 'Failed to add chat!' });
   }
 };
 
@@ -260,21 +270,21 @@ export const readChat = async (req, res) => {
   const chatId = req.params.id;
 
   try {
-    const chat = await prisma.chat.findUnique({ 
+    const chat = await prisma.chat.findUnique({
       where: { id: chatId },
       include: {
         messages: {
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           take: 1,
         },
       },
     });
-    
-    if (!chat) return res.status(404).json({ message: "Chat not found!" });
+
+    if (!chat) return res.status(404).json({ message: 'Chat not found!' });
 
     // Don't process chats with no messages
     if (chat.messages.length === 0) {
-      return res.status(400).json({ message: "Chat has no messages!" });
+      return res.status(400).json({ message: 'Chat has no messages!' });
     }
 
     if (!chat.seenBy.includes(tokenUserId)) {
@@ -286,16 +296,16 @@ export const readChat = async (req, res) => {
       });
     }
 
-    res.status(200).json({ message: "Chat marked as read." });
+    res.status(200).json({ message: 'Chat marked as read.' });
   } catch (err) {
-    console.error("Error marking chat as read:", err);
-    res.status(500).json({ message: "Failed to read chat!" });
+    console.error('Error marking chat as read:', err);
+    res.status(500).json({ message: 'Failed to read chat!' });
   }
 };
 
 export const cleanupEmptyChats = async (req, res) => {
   const tokenUserId = req.userId;
-  
+
   try {
     // Find all chats for this user
     const chats = await prisma.chat.findMany({
@@ -308,26 +318,26 @@ export const cleanupEmptyChats = async (req, res) => {
         },
       },
     });
-    
+
     // Filter chats with no messages
     const emptyChatsIds = chats
-      .filter(chat => chat.messages.length === 0)
-      .map(chat => chat.id);
-    
+      .filter((chat) => chat.messages.length === 0)
+      .map((chat) => chat.id);
+
     // Delete empty chats
     if (emptyChatsIds.length > 0) {
       await prisma.chat.deleteMany({
         where: {
-          id: { in: emptyChatsIds }
-        }
+          id: { in: emptyChatsIds },
+        },
       });
     }
-    
-    res.status(200).json({ 
-      message: `Successfully deleted ${emptyChatsIds.length} empty chats.`
+
+    res.status(200).json({
+      message: `Successfully deleted ${emptyChatsIds.length} empty chats.`,
     });
   } catch (err) {
-    console.error("Error cleaning up empty chats:", err);
-    res.status(500).json({ message: "Failed to clean up empty chats!" });
+    console.error('Error cleaning up empty chats:', err);
+    res.status(500).json({ message: 'Failed to clean up empty chats!' });
   }
 };

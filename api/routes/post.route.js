@@ -1,5 +1,5 @@
-import express from "express";
-import { verifyToken } from "../middleware/verifyToken.js";
+import express from 'express';
+import { verifyToken } from '../middleware/verifyToken.js';
 import {
   addPost,
   deletePost,
@@ -11,15 +11,15 @@ import {
   // getPageViewStats,
   // getPageViewFrequencyLabel,
   // trackPageView
-} from "../controllers/post.controller.js";
+} from '../controllers/post.controller.js';
 
 const router = express.Router();
 
-router.get("/", getPosts);
-router.get("/:id", getPost);
-router.post("/", verifyToken, addPost);
-router.put("/:id", verifyToken, updatePost);
-router.delete("/:id", verifyToken, deletePost);
+router.get('/', getPosts);
+router.get('/:id', getPost);
+router.post('/', verifyToken, addPost);
+router.put('/:id', verifyToken, updatePost);
+router.delete('/:id', verifyToken, deletePost);
 router.patch('/:id/toggle-sold', verifyToken, toggleSoldStatus);
 router.patch('/:id/toggle-rented', verifyToken, toggleRentedStatus);
 

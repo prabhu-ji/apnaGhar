@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { FaPaperPlane, FaSmile, FaMapMarkerAlt } from "react-icons/fa";
 import apiRequest from "../../lib/apiRequest";
@@ -67,16 +69,19 @@ function Chat({ chats }) {
       
       setChat(prevChat => {
         if (prevChat?.id === id) {
+          // When clicking the same chat, toggle the visibility
           setIsChatBoxOpen(prev => !prev);
-          return prevChat;
+          // If we're closing the chat, return null to clear the active chat
+          return !isChatBoxOpen ? prevChat : null;
         }
+        // Opening a new chat
         setIsChatBoxOpen(true);
         return { ...res.data, receiver };
       });
     } catch (err) {
       console.log(err);
     }
-  }, [currentUser.id, decrease]); // Remove chat and isChatBoxOpen from dependencies
+  }, [currentUser.id, decrease, isChatBoxOpen]);// Remove chat and isChatBoxOpen from dependencies
 
   const handleSendMessage = async () => {
     if (!text.trim()) return;

@@ -7,6 +7,7 @@ import apiRequest from '../lib/apiRequest';
 
 export const NotificationContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {

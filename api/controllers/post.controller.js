@@ -1,6 +1,5 @@
-import prisma from "../lib/prisma.js";
-import jwt from "jsonwebtoken";
-  
+import prisma from '../lib/prisma.js';
+import jwt from 'jsonwebtoken';
 
 export const getPosts = async (req, res) => {
   const query = req.query;
@@ -12,7 +11,7 @@ export const getPosts = async (req, res) => {
       const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
       userId = payload.id;
     } catch (err) {
-      console.log("Token verification error:", err);
+      console.log('Token verification error:', err);
     }
   }
 
@@ -30,11 +29,11 @@ export const getPosts = async (req, res) => {
       },
       include: {
         user: {
-          select:{
+          select: {
             id: true,
             username: true,
-            avatar: true
-          }
+            avatar: true,
+          },
         },
       },
     });
@@ -43,33 +42,33 @@ export const getPosts = async (req, res) => {
       // Get all saved posts for the user
       const savedPosts = await prisma.savedPost.findMany({
         where: {
-          userId: userId
+          userId: userId,
         },
         select: {
           postId: true,
-        }
+        },
       });
 
-      const savedPostIds = new Set(savedPosts.map(sp => sp.postId));
+      const savedPostIds = new Set(savedPosts.map((sp) => sp.postId));
 
       // Add isSaved property to each post
-      const postsWithSavedStatus = posts.map(post => ({
+      const postsWithSavedStatus = posts.map((post) => ({
         ...post,
-        isSaved: savedPostIds.has(post.id)
+        isSaved: savedPostIds.has(post.id),
       }));
 
       res.status(200).json(postsWithSavedStatus);
     } else {
       // If user is not logged in, mark all posts as not saved
-      const postsWithSavedStatus = posts.map(post => ({
+      const postsWithSavedStatus = posts.map((post) => ({
         ...post,
-        isSaved: false
+        isSaved: false,
       }));
       res.status(200).json(postsWithSavedStatus);
     }
   } catch (err) {
-    console.error("Get Posts Error:", err);
-    res.status(500).json({ message: "Failed to get posts" });
+    console.error('Get Posts Error:', err);
+    res.status(500).json({ message: 'Failed to get posts' });
   }
 };
 
@@ -86,11 +85,11 @@ export const getPost = async (req, res) => {
             avatar: true,
           },
         },
-        visits: true, 
+        visits: true,
       },
     });
 
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post) return res.status(404).json({ message: 'Post not found' });
 
     const token = req.cookies?.token;
     let isSaved = false;
@@ -106,61 +105,74 @@ export const getPost = async (req, res) => {
         });
         isSaved = !!saved;
       } catch (err) {
-        console.log("Token verification error:", err);
+        console.log('Token verification error:', err);
       }
     }
 
     res.status(200).json({ ...post, isSaved });
   } catch (err) {
-    console.error("Get Post Error:", err);
-    res.status(500).json({ message: "Failed to get post" });
+    console.error('Get Post Error:', err);
+    res.status(500).json({ message: 'Failed to get post' });
   }
 };
 
 export const addPost = async (req, res) => {
-   const { postData, postDetail } = req.body;
-   const tokenUserId = req.userId;
-   
-   try {
-     const user = await prisma.user.findUnique({ where: { id: tokenUserId } });
-     if (!user || user.userType !== "seller") {
-       return res.status(403).json({ message: "Only sellers can add posts!" });
-     }
+  const { postData, postDetail } = req.body;
+  const tokenUserId = req.userId;
 
-     const newPost = await prisma.post.create({
-       data: { ...postData, isSold: false, isRented: false, user: { connect: { id: tokenUserId } }, postDetail: { create: postDetail } },
-       include: { postDetail: true },
-     });
- 
-     res.status(201).json(newPost);
-   } catch (err) {
-     res.status(500).json({ message: "Failed to create post", error: err.message });
-   }
+  try {
+    const user = await prisma.user.findUnique({ where: { id: tokenUserId } });
+    if (!user || user.userType !== 'seller') {
+      return res.status(403).json({ message: 'Only sellers can add posts!' });
+    }
+
+    const newPost = await prisma.post.create({
+      data: {
+        ...postData,
+        isSold: false,
+        isRented: false,
+        user: { connect: { id: tokenUserId } },
+        postDetail: { create: postDetail },
+      },
+      include: { postDetail: true },
+    });
+
+    res.status(201).json(newPost);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: 'Failed to create post', error: err.message });
+  }
 };
- 
+
 export const updatePost = async (req, res) => {
-   const id = req.params.id;
-   const tokenUserId = req.userId;
-   const { postData, postDetail } = req.body;
-   
-   try {
-     const post = await prisma.post.findUnique({ where: { id }, include: { postDetail: true } });
-     if (!post || post.userId !== tokenUserId || post.isSold) {
-       return res.status(403).json({ message: "Not authorized!" });
-     }
+  const id = req.params.id;
+  const tokenUserId = req.userId;
+  const { postData, postDetail } = req.body;
 
-     const updatedPost = await prisma.post.update({
-       where: { id },
-       data: { ...postData, postDetail: { update: postDetail } },
-       include: { postDetail: true },
-     });
- 
-     res.status(200).json(updatedPost);
-   } catch (err) {
-     res.status(500).json({ message: "Failed to update post", error: err.message });
-   }
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: { postDetail: true },
+    });
+    if (!post || post.userId !== tokenUserId || post.isSold) {
+      return res.status(403).json({ message: 'Not authorized!' });
+    }
+
+    const updatedPost = await prisma.post.update({
+      where: { id },
+      data: { ...postData, postDetail: { update: postDetail } },
+      include: { postDetail: true },
+    });
+
+    res.status(200).json(updatedPost);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: 'Failed to update post', error: err.message });
+  }
 };
- 
+
 export const deletePost = async (req, res) => {
   const id = req.params.id;
   const tokenUserId = req.userId;
@@ -175,16 +187,18 @@ export const deletePost = async (req, res) => {
     });
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found!" });
+      return res.status(404).json({ message: 'Post not found!' });
     }
 
     if (post.userId !== tokenUserId) {
-      return res.status(403).json({ message: "Not Authorized!" });
+      return res.status(403).json({ message: 'Not Authorized!' });
     }
-    
+
     // Check if post is already marked as sold
     if (post.isSold) {
-      return res.status(403).json({ message: "Cannot delete a sold property!" });
+      return res
+        .status(403)
+        .json({ message: 'Cannot delete a sold property!' });
     }
 
     // Delete in transaction to ensure both records are deleted or none
@@ -212,10 +226,12 @@ export const deletePost = async (req, res) => {
       });
     });
 
-    res.status(200).json({ message: "Post deleted successfully" });
+    res.status(200).json({ message: 'Post deleted successfully' });
   } catch (err) {
-    console.error("Delete Post Error:", err);
-    res.status(500).json({ message: "Failed to delete post. Please try again." });
+    console.error('Delete Post Error:', err);
+    res
+      .status(500)
+      .json({ message: 'Failed to delete post. Please try again.' });
   }
 };
 
@@ -229,20 +245,20 @@ export const toggleSoldStatus = async (req, res) => {
     });
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found!" });
+      return res.status(404).json({ message: 'Post not found!' });
     }
 
     if (post.userId !== tokenUserId) {
-      return res.status(403).json({ message: "Not authorized!" });
+      return res.status(403).json({ message: 'Not authorized!' });
     }
 
     // Add this check to ensure id is valid ObjectId format
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid post ID format" });
+      return res.status(400).json({ message: 'Invalid post ID format' });
     }
 
     // If property type is for buy
-    if (post.type === "buy") {
+    if (post.type === 'buy') {
       // If already sold, never allow toggle back without explicit confirmation
       if (post.isSold) {
         // Only allow changing back to available with explicit confirmation
@@ -250,24 +266,24 @@ export const toggleSoldStatus = async (req, res) => {
           where: { id },
           data: {
             isSold: false,
-            isRented: false
+            isRented: false,
           },
         });
-        
+
         return res.status(200).json(updatedPost);
       }
-      
+
       // If not yet sold, mark as sold
       const updatedPost = await prisma.post.update({
         where: { id },
         data: {
           isSold: true,
-          isRented: false
+          isRented: false,
         },
       });
-      
+
       return res.status(200).json(updatedPost);
-    } 
+    }
     // For all other property types, just toggle isSold
     const updatedPost = await prisma.post.update({
       where: { id },
@@ -278,8 +294,10 @@ export const toggleSoldStatus = async (req, res) => {
 
     res.status(200).json(updatedPost);
   } catch (err) {
-    console.error("Toggle Sold Status Error:", err);
-    res.status(500).json({ message: "Failed to update status", error: err.message });
+    console.error('Toggle Sold Status Error:', err);
+    res
+      .status(500)
+      .json({ message: 'Failed to update status', error: err.message });
   }
 };
 
@@ -293,16 +311,16 @@ export const toggleRentedStatus = async (req, res) => {
     });
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found!" });
+      return res.status(404).json({ message: 'Post not found!' });
     }
 
     if (post.userId !== tokenUserId) {
-      return res.status(403).json({ message: "Not authorized!" });
+      return res.status(403).json({ message: 'Not authorized!' });
     }
-    
+
     // Add this check to ensure id is valid ObjectId format
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid post ID format" });
+      return res.status(400).json({ message: 'Invalid post ID format' });
     }
 
     // We'll allow toggling rented status regardless of property type
@@ -312,28 +330,18 @@ export const toggleRentedStatus = async (req, res) => {
       data: {
         isRented: !post.isRented,
         // If we're marking as rented, make sure isSold is false
-        isSold: post.isRented ? post.isSold : false
+        isSold: post.isRented ? post.isSold : false,
       },
     });
 
     res.status(200).json(updatedPost);
   } catch (err) {
-    console.error("Toggle Rented Status Error:", err);
-    res.status(500).json({ message: "Failed to update rented status", error: err.message });
+    console.error('Toggle Rented Status Error:', err);
+    res
+      .status(500)
+      .json({ message: 'Failed to update rented status', error: err.message });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
 
 // const PageViewFrequency = {
 //   RARE: 'Rare Visits',
@@ -341,7 +349,6 @@ export const toggleRentedStatus = async (req, res) => {
 //   MODERATE: 'Moderate Popularity',
 //   HIGH: 'High Popularity'
 // };
-
 
 // export const getPageViewFrequencyLabel = (totalViews) => {
 //   if (totalViews > 100) return PageViewFrequency.HIGH;
@@ -406,7 +413,7 @@ export const toggleRentedStatus = async (req, res) => {
 
 //     // Get comprehensive view metrics
 //     const viewMetrics = await prisma.pageView.aggregate({
-//       where: { 
+//       where: {
 //         pageId: pageId,
 //         status: 'UNIQUE'
 //       },
@@ -421,7 +428,7 @@ export const toggleRentedStatus = async (req, res) => {
 //     // Get hourly breakdown of views
 //     const hourlyViews = await prisma.pageView.groupBy({
 //       by: ['hour'],
-//       where: { 
+//       where: {
 //         pageId: pageId,
 //         status: 'UNIQUE'
 //       },
@@ -442,9 +449,9 @@ export const toggleRentedStatus = async (req, res) => {
 
 //   } catch (err) {
 //     console.error("Page View Tracking Error:", err);
-//     res.status(500).json({ 
-//       message: "Failed to track page view", 
-//       error: err instanceof Error ? err.message : 'Unknown error' 
+//     res.status(500).json({
+//       message: "Failed to track page view",
+//       error: err instanceof Error ? err.message : 'Unknown error'
 //     });
 //   }
 // };
@@ -459,7 +466,7 @@ export const toggleRentedStatus = async (req, res) => {
 //         totalViews: true,
 //         uniqueViews: true,
 //         _count: {
-//           select: { 
+//           select: {
 //             PageView: {
 //               where: { status: 'UNIQUE' }
 //             }

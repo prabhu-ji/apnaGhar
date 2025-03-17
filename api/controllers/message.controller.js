@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma.js";
+import prisma from '../lib/prisma.js';
 
 export const addMessage = async (req, res) => {
   const tokenUserId = req.userId;
@@ -6,8 +6,8 @@ export const addMessage = async (req, res) => {
   const { text } = req.body;
 
   try {
-    if (!text || text.trim() === "") {
-      return res.status(400).json({ message: "Message cannot be empty!" });
+    if (!text || text.trim() === '') {
+      return res.status(400).json({ message: 'Message cannot be empty!' });
     }
 
     const chat = await prisma.chat.findFirst({
@@ -17,7 +17,7 @@ export const addMessage = async (req, res) => {
       },
     });
 
-    if (!chat) return res.status(404).json({ message: "Chat not found!" });
+    if (!chat) return res.status(404).json({ message: 'Chat not found!' });
 
     const message = await prisma.message.create({
       data: {
@@ -37,7 +37,7 @@ export const addMessage = async (req, res) => {
 
     res.status(201).json(message);
   } catch (err) {
-    console.error("Error adding message:", err);
-    res.status(500).json({ message: "Failed to add message!" });
+    console.error('Error adding message:', err);
+    res.status(500).json({ message: 'Failed to add message!' });
   }
 };

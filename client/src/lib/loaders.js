@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { defer } from "react-router-dom";
 import apiRequest from "./apiRequest";
 

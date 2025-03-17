@@ -449,7 +449,7 @@ function EditPostPage() {
               {isSubmitting ? "Updating..." : "Update"}
             </button>
           </form>
-        </div>zzzzz
+        </div>
       </div>
       <div className="sideContainer">
         {images.map((image, index) => (

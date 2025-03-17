@@ -1,10 +1,10 @@
 // utils/otpService.js
-import nodemailer from "nodemailer";
-import prisma from "../lib/prisma.js";
+import nodemailer from 'nodemailer';
+import prisma from '../lib/prisma.js';
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -18,17 +18,17 @@ class OtpService {
   }
 
   // Send OTP email
-  static async sendOtpEmail(email, otp, purpose = "verification") {
+  static async sendOtpEmail(email, otp, purpose = 'verification') {
     const subjects = {
-      verification: "Email Verification OTP",
-      update: "Email Update Verification",
-      reset: "Password Reset OTP"
+      verification: 'Email Verification OTP',
+      update: 'Email Update Verification',
+      reset: 'Password Reset OTP',
     };
 
     const messages = {
       verification: `Your verification OTP code is: ${otp}`,
       update: `Your OTP code for email update is: ${otp}`,
-      reset: `Your password reset OTP code is: ${otp}`
+      reset: `Your password reset OTP code is: ${otp}`,
     };
 
     const mailOptions = {
@@ -50,14 +50,14 @@ class OtpService {
             If you didn't request this OTP, please ignore this email.
           </p>
         </div>
-      `
+      `,
     };
 
     try {
       await transporter.sendMail(mailOptions);
       return true;
     } catch (err) {
-      console.error("Error sending OTP email:", err);
+      console.error('Error sending OTP email:', err);
       return false;
     }
   }
@@ -69,17 +69,17 @@ class OtpService {
         where: { email },
         update: {
           otp,
-          otpExpires: new Date(Date.now() + 1 * 60 * 1000) // 10 minutes
+          otpExpires: new Date(Date.now() + 1 * 60 * 1000), // 10 minutes
         },
         create: {
           email,
           otp,
-          otpExpires: new Date(Date.now() + 1 * 60 * 1000)
-        }
+          otpExpires: new Date(Date.now() + 1 * 60 * 1000),
+        },
       });
       return true;
     } catch (err) {
-      console.error("Error storing OTP:", err);
+      console.error('Error storing OTP:', err);
       return false;
     }
   }
@@ -88,48 +88,48 @@ class OtpService {
   static async verifyOTP(email, otp) {
     try {
       const storedOtp = await prisma.otp.findUnique({
-        where: { email }
+        where: { email },
       });
 
       if (!storedOtp) {
-        return { valid: false, message: "No OTP found for this email" };
+        return { valid: false, message: 'No OTP found for this email' };
       }
 
       if (storedOtp.otp !== otp) {
-        return { valid: false, message: "Invalid OTP" };
+        return { valid: false, message: 'Invalid OTP' };
       }
 
       if (new Date(storedOtp.otpExpires) < new Date()) {
         await prisma.otp.delete({ where: { email } });
-        return { valid: false, message: "OTP has expired" };
+        return { valid: false, message: 'OTP has expired' };
       }
 
-      return { valid: true, message: "OTP verified successfully" };
+      return { valid: true, message: 'OTP verified successfully' };
     } catch (err) {
-      console.error("Error verifying OTP:", err);
-      return { valid: false, message: "Error verifying OTP" };
+      console.error('Error verifying OTP:', err);
+      return { valid: false, message: 'Error verifying OTP' };
     }
   }
 
   // Generate and send OTP
-  static async initiateOTP(email, purpose = "verification") {
+  static async initiateOTP(email, purpose = 'verification') {
     try {
       const otp = this.generateOTP();
       const stored = await this.storeOTP(email, otp);
-      
+
       if (!stored) {
-        throw new Error("Failed to store OTP");
+        throw new Error('Failed to store OTP');
       }
 
       const sent = await this.sendOtpEmail(email, otp, purpose);
       if (!sent) {
         await prisma.otp.delete({ where: { email } });
-        throw new Error("Failed to send OTP email");
+        throw new Error('Failed to send OTP email');
       }
 
-      return { success: true, message: "OTP sent successfully" };
+      return { success: true, message: 'OTP sent successfully' };
     } catch (err) {
-      console.error("Error initiating OTP:", err);
+      console.error('Error initiating OTP:', err);
       return { success: false, message: err.message };
     }
   }
@@ -140,7 +140,7 @@ class OtpService {
       await prisma.otp.delete({ where: { email } });
       return true;
     } catch (err) {
-      console.error("Error clearing OTP:", err);
+      console.error('Error clearing OTP:', err);
       return false;
     }
   }

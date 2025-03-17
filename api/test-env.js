@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { config } from 'dotenv';
+import { dirname } from 'path';
 import { readdirSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,5 +15,5 @@ console.log('Dotenv config result:', result);
 console.log('Environment variables:', {
   DATABASE_URL: process.env.DATABASE_URL,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,
-  PORT: process.env.PORT
+  PORT: process.env.PORT,
 });

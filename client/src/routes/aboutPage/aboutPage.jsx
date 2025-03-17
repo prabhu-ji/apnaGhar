@@ -1,12 +1,15 @@
+/* eslint-disable no-unused-vars */
+/**/
 import { useEffect, useRef, useState } from "react";
 import "./aboutPage.scss";
+import { useNavigate } from "react-router-dom";
 
 const AboutPage = () => {
   const [activeValue, setActiveValue] = useState(0);
   const timelineRefs = useRef([]);
   const statsRef = useRef(null);
   const [isStatsVisible, setIsStatsVisible] = useState(false);
-
+  const navigate = useNavigate();
   const companyValues = [
     {
       icon: "🏠",
@@ -133,7 +136,8 @@ const AboutPage = () => {
   }, []);
 
   const handleContactClick = () => {
-    window.location.href = '/contact';
+    // window.location.href = '/contact';
+    navigate("/contact");
   };
 
   const handleLinkedInClick = (url) => {
@@ -153,7 +157,7 @@ const AboutPage = () => {
         <div className="container">
           <h2>Our Mission</h2>
           <p>
-            At ApnaGhar, we're committed to transforming the real estate
+            At ApnaGhar, we are committed to transforming the real estate
             experience through innovation, integrity, and exceptional service. Our
             mission is to help people find their perfect properties while making
             the process seamless and enjoyable.
@@ -194,7 +198,7 @@ const AboutPage = () => {
                 </div>
                 <h3>{member.name}</h3>
                 <h4>{member.position}</h4>
-                <p className="quote">"{member.quote}"</p>
+                <p className="quote">&quot;{member.quote}&quot;</p>
               </div>
             ))}
           </div>
@@ -205,14 +209,14 @@ const AboutPage = () => {
         <div className="container">
           <h2>Join Our Journey</h2>
           <p>
-            Whether you are looking to buy, sell, or join our team, we're here to
+            Whether you are looking to buy, sell, or join our team, we are here to
             help you achieve your real estate goals.
           </p>
           <div className="cta-buttons">
             <button onClick={handleContactClick}>
               Contact Us
             </button>
-            <button onClick={() => window.location.href = '/about'} className="secondary">
+            <button onClick={() => navigate("/about")} className="secondary">
               Learn More About Us
             </button>
           </div>

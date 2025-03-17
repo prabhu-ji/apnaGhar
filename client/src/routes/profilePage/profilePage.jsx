@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useContext, useState, useEffect, Suspense } from "react";
 import { Await, Link, useLoaderData, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -9,7 +10,7 @@ import "./profilePage.scss";
 
 const ProfilePage = () => {
   const data = useLoaderData();
-  const { currentUser, deleteUser, updateUser } = useContext(AuthContext);
+  const { currentUser, deleteUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [showDialog, setShowDialog] = useState(false);
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
@@ -18,6 +19,7 @@ const ProfilePage = () => {
   const [error, setError] = useState("");
   const [verifyError, setVerifyError] = useState("");
   const [verifySuccess, setVerifySuccess] = useState("");
+  
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {

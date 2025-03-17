@@ -51,21 +51,21 @@
 //       where: { postId: visit.postId }
 //     });
 
-//     const averageRating = postRatings.length > 0 
-//       ? postRatings.reduce((sum, r) => sum + r.rating, 0) / postRatings.length 
+//     const averageRating = postRatings.length > 0
+//       ? postRatings.reduce((sum, r) => sum + r.rating, 0) / postRatings.length
 //       : 0;
 
 //     // Optional: Update post with average rating (if you want to store it)
 //     await prisma.post.update({
 //       where: { id: visit.postId },
-//       data: { 
+//       data: {
 //         averageRating: averageRating,
 //         totalRatings: postRatings.length
 //       }
 //     });
 
-//     res.status(201).json({ 
-//       rating: newRating, 
+//     res.status(201).json({
+//       rating: newRating,
 //       averageRating: averageRating,
 //       totalRatings: postRatings.length
 //     });
@@ -82,10 +82,10 @@
 //   try {
 //     const ratings = await prisma.rating.findMany({
 //       where: { postId },
-//       include: { 
+//       include: {
 //         user: {
-//           select: { 
-//             id: true, 
+//           select: {
+//             id: true,
 //             username: true,
 //             avatar: true
 //           }
@@ -94,12 +94,12 @@
 //       orderBy: { createdAt: 'desc' }
 //     });
 
-//     const averageRating = ratings.length > 0 
-//       ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length 
+//     const averageRating = ratings.length > 0
+//       ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
 //       : 0;
 
-//     res.status(200).json({ 
-//       ratings, 
+//     res.status(200).json({
+//       ratings,
 //       averageRating,
 //       totalRatings: ratings.length
 //     });

@@ -43,7 +43,7 @@
 //     }
 //   } catch (err) {
 //     console.error("Aadhaar Verification Error:", err.response?.data || err);
-    
+
 //     // Handle API-specific errors
 //     if (err.response?.data?.error) {
 //       return res.status(400).json({
@@ -51,7 +51,7 @@
 //         message: err.response.data.error.message || "Validation failed",
 //       });
 //     }
-    
+
 //     return res.status(500).json({
 //       success: false,
 //       message: "Failed to verify Aadhaar. Please try again later.",

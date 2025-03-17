@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./contactPage.scss";
 import { toast } from "react-toastify";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";

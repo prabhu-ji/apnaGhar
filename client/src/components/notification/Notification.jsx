@@ -20,6 +20,7 @@ const Notification = () => {
     } else {
       fetchUserNotifications();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   useEffect(() => {

@@ -4,7 +4,6 @@
 
 // const router = express.Router();
 
-
 // router.post("/aadhaar", verifyToken, verifyAadhaar);
 
 // export default router;

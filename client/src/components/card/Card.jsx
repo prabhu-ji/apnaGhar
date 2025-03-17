@@ -12,7 +12,7 @@ import SellIcon from "@mui/icons-material/Sell";
 import HomeIcon from "@mui/icons-material/Home";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { addHours, setHours, setMinutes } from 'date-fns';
+import { setHours, setMinutes } from 'date-fns';
 import { useOpenChat } from "../../context/OpenChat";
 
 function Card({ item, onDelete, listType }) {
