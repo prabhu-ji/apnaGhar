@@ -16,7 +16,6 @@ const router = express.Router();
 router.post('/verify-email', verifyToken, verifyEmailUpdate);
 router.post('/save', verifyToken, savePost);
 router.get('/profilePosts', verifyToken, profilePosts);
-// router.get("/notification", verifyToken, getNotifications);
 router.get('/notification-count', verifyToken, getNotificationCount);
 router.get('/', getUsers);
 router.get('/:id', verifyToken, getUser);

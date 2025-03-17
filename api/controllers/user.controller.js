@@ -307,35 +307,37 @@ export const deleteUser = async (req, res) => {
   }
 
   try {
-    // Transaction to ensure all operations succeed or fail together
+    // First, get all chats that include this user
+    const chats = await prisma.chat.findMany({
+      where: {
+        userIDs: { hasSome: [id] },
+      },
+    });
+    
+    // Create update operations for each chat
+    const chatUpdates = chats.map(chat => {
+      return prisma.chat.update({
+        where: { id: chat.id },
+        data: {
+          userIDs: {
+            set: chat.userIDs.filter(userId => userId !== id),
+          },
+        },
+      });
+    });
+    
     await prisma.$transaction([
       // Delete user's saved posts
       prisma.savedPost.deleteMany({
         where: { userId: id },
       }),
 
-      // Delete user's posts
       prisma.post.deleteMany({
         where: { userId: id },
       }),
 
-      // Update chat userIDs to remove the user
-      prisma.chat.updateMany({
-        where: {
-          userIDs: { hasSome: [id] },
-        },
-        data: {
-          userIDs: {
-            set: prisma.chat
-              .findUnique({
-                where: { id: 'chatId' },
-              })
-              .userIDs.filter((userId) => userId !== id),
-          },
-        },
-      }),
 
-      // Finally, delete the user
+      ...chatUpdates,
       prisma.user.delete({
         where: { id },
       }),

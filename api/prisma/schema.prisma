@@ -4,28 +4,8 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = "mongodb+srv://prabhuji2910:prabhuji@cluster0.vxiu5.mongodb.net/estate?retryWrites=true&w=majority&appName=Cluster0"
+  url      = env("DATABASE_URL")
 }
-
-model Rating {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  postId    String   @db.ObjectId
-  userId    String   @db.ObjectId
-  visitId   String   @db.ObjectId
-  rating    Float
-  comment   String?
-  createdAt DateTime @default(now())
-
-  post      Post     @relation(fields: [postId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-  visit     Visit    @relation(fields: [visitId], references: [id])
-
-  @@unique([postId, userId, visitId])
-}
-generator client {
-  provider = "prisma-client-js"
-}
-
 
 enum Type {
   buy
@@ -75,7 +55,7 @@ model User {
   username   String      @unique
   password   String
   avatar     String?
-  tempEmail   String?
+  tempEmail  String?
   userType   UserType    @default(buyer)
   createdAt  DateTime    @default(now())
   posts      Post[]
@@ -85,7 +65,6 @@ model User {
   visitsRequested Visit[] @relation("UserVisitsRequested")
   visitsReceived  Visit[] @relation("UserVisitsReceived")
   notifications   Notification[]
-  ratings   Rating[]
 }
 
 model Otp {
@@ -127,7 +106,6 @@ model Visit {
   timeSlot    String      
   status      VisitStatus @default(PENDING)
   createdAt   DateTime    @default(now())
-  ratings   Rating[]
   
   // Relations
   post        Post        @relation(fields: [postId], references: [id])
@@ -162,29 +140,34 @@ model Notification {
   visitId   String?          @db.ObjectId
 }
 
+model Post {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  price      Int
+  images     String[]
+  address    String
+  city       String
+  bedroom    Int
+  bathroom   Int
+  latitude   String
+  longitude  String
+  type       Type
+  property   Property
+  isSold     Boolean     @default(false)  
+  isRented   Boolean     @default(false)  // Add this field if it's missing
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id])
+  userId     String      @db.ObjectId
+  postDetail PostDetail?
+  savedPosts SavedPost[]
+  visits     Visit[]
+}
+
 model Page {
   id           String     @id @default(cuid()) @map("_id")
   userId       String
   totalViews   Int        @default(0)
   uniqueViews  Int        @default(0)
-  PageView     PageView[]
-}
-
-model PageView {
-  id         String   @id @default(cuid()) @map("_id")
-  pageId     String
-  viewerId   String
-  ownerId    String
-  date       DateTime
-  hour       Int
-  minute     Int
-  ipAddress  String
-  userAgent  String
-  referrer   String
-  status     String   @default("UNIQUE")
-  createdAt  DateTime @default(now())
-
-  page       Page     @relation(fields: [pageId], references: [id])
 }
 
 // to save changes use : npx prisma db push
