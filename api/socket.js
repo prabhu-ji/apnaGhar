@@ -2,13 +2,14 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import express from 'express';
 import cors from 'cors';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.CLIENT_URL,
   methods: ["GET", "POST", "PUT"],
   credentials: true,
   optionsSuccessStatus: 200
@@ -17,7 +18,7 @@ app.use(cors({
 // Configure Socket.IO
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     methods: ["GET", "POST", "PUT"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],

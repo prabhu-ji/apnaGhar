@@ -73,8 +73,7 @@
         .featureTitle {
           font-size: 22px;
           font-weight: 600;
-          margin-bottom: 12px;
-          color: #008080;
+          color: #16cece;
           
           @include sm {
             font-size: 18px;
@@ -87,9 +86,9 @@
           height: 40px;
           
           .typingText {
-            font-size: 18px;
+            font-size: 20px;
             color: #00a3a3;
-            font-weight: 500;
+            font-weight: 300;
             
             @include sm {
               font-size: 16px;
